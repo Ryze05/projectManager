@@ -28,6 +28,7 @@ kotlin {
             implementation(libs.supabase.postgrest)
             implementation(libs.supabase.realtime)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.supabase.storage)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -57,7 +58,7 @@ val sUrl = props.getProperty("supabase.url") ?: "https://default.url"
 val sKey = props.getProperty("supabase.key") ?: "default_key"
 
 extensions.configure<com.codingfeline.buildkonfig.gradle.BuildKonfigExtension> {
-    packageName = "org.example.project.shared"
+    packageName = "org.example.project.shared" // -> C:\Users\Propietario\Desktop\proyectos\projectManager\projectManager\shared
 
     defaultConfigs {
         buildConfigField(Type.STRING, "SUPABASE_URL", sUrl)
