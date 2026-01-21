@@ -1,6 +1,8 @@
 package org.example.project.ui.auth
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,8 +34,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.example.project.ui.theme.ProjectManagerTheme
@@ -49,6 +54,11 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
+    val isEmailValid = email.contains("@") && email.contains(".")
+    val isPasswordValid = password.length >= 8
+    val isNameValid = fullName.trim().length >= 3
+    val canRegister = isEmailValid && isPasswordValid && isNameValid && !state.isLoading
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
     ) { innerPadding ->
@@ -56,9 +66,10 @@ fun RegisterScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.Start
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = "Crear cuenta",
@@ -66,12 +77,13 @@ fun RegisterScreen(
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Text(
                 text = "Únete a nuestra plataforma de gestión y empieza a organizar tus proyectos hoy mismo.",
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Justify
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -89,6 +101,7 @@ fun RegisterScreen(
                 onValueChange = { fullName = it },
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.small,
+                isError = fullName.isNotEmpty() && !isNameValid,
                 placeholder = {
                     Text(
                         text = "Tu nombre",
@@ -96,6 +109,15 @@ fun RegisterScreen(
                         style = MaterialTheme.typography.bodyLarge
                     )
                 },
+                supportingText = {
+                    if (fullName.isNotEmpty() && !isNameValid) {
+                        Text(
+                            text = "Introduce al menos 3 caracteres",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -113,6 +135,7 @@ fun RegisterScreen(
                 onValueChange = { email = it },
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.small,
+                isError = email.isNotEmpty() && !isEmailValid,
                 placeholder = {
                     Text(
                         text = "ejemplo@correo.com",
@@ -120,6 +143,15 @@ fun RegisterScreen(
                         style = MaterialTheme.typography.bodyLarge
                     )
                 },
+                supportingText = {
+                    if (email.isNotEmpty() && !isEmailValid) {
+                        Text(
+                            text = "Introduce un correo válido",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -130,6 +162,8 @@ fun RegisterScreen(
                 color = MaterialTheme.colorScheme.onBackground
             )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -138,9 +172,13 @@ fun RegisterScreen(
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff, contentDescription = "Visivility Icon")
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = "Visivility Icon"
+                        )
                     }
                 },
+                isError = password.isNotEmpty() && !isPasswordValid,
                 placeholder = {
                     Text(
                         text = "Mínimo 8 caracteres",
@@ -148,26 +186,73 @@ fun RegisterScreen(
                         style = MaterialTheme.typography.bodyLarge
                     )
                 },
+                supportingText = {
+                    if (password.isNotEmpty() && !isPasswordValid) {
+                        Text(
+                            text = "Mínimo 8 caracteres",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(32.dp))
-
 
             Button(
                 onClick = { viewModel?.register(email, password, fullName) },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = MaterialTheme.shapes.small,
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                enabled = !state.isLoading
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                ),
+                enabled = canRegister
             ) {
                 if (state.isLoading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
                 } else {
-                    Text("Registrarse", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimary)
+                    Text(
+                        "Registrarse",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "¿Ya tienes una cuenta? ",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                TextButton(onClick = {}) {
+                    Text(
+                        text = "Inicia sesión",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
 
 
+
+            state.errorMessage?.let { error ->
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp)
+                )
+            }
         }
     }
 
