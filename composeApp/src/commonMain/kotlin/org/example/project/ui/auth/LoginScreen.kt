@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,7 +42,9 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun LoginScreen(
-    viewModel: AuthViewModel
+    viewModel: AuthViewModel,
+    onNavigateToRegister: () -> Unit,
+    onLoginSuccess: () -> Unit
 ) {
     val state = viewModel.state.collectAsState().value
     var email by remember { mutableStateOf("") }
@@ -52,12 +55,13 @@ fun LoginScreen(
     val isPasswordValid = password.length >= 6
     val canLogin = isEmailValid && isPasswordValid && !state.isLoading
 
-    //TODO NAV
-    /*LaunchedEffect(state.isSuccess) {
+    LaunchedEffect(state.isSuccess) {
         if (state.isSuccess) {
-
+            onLoginSuccess()
         }
-    }*/
+    }
+
+    //TODO estilizar mensajes de error
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -207,7 +211,7 @@ fun LoginScreen(
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                TextButton(onClick = {}) {
+                TextButton(onClick = { onNavigateToRegister() }) {
                     Text(
                         text = "Regístrate",
                         style = MaterialTheme.typography.bodyLarge,
@@ -215,6 +219,17 @@ fun LoginScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            state.errorMessage?.let { error ->
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
             }
         }
     }

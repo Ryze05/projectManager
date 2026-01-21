@@ -36,7 +36,7 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
-            implementation("io.ktor:ktor-client-okhttp:3.3.3")
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -49,6 +49,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(projects.shared)
+            implementation(libs.jetbrains.compose.navigation)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -56,14 +57,14 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
-            implementation("io.ktor:ktor-client-okhttp:3.3.3")
+            implementation(libs.ktor.client.okhttp)
         }
 
         val iosMain by creating {
             dependsOn(commonMain)
             dependencies {
                 // 🔥 Ktor engine iOS
-                implementation("io.ktor:ktor-client-darwin:3.3.3")
+                implementation(libs.ktor.client.darwin)
             }
         }
 

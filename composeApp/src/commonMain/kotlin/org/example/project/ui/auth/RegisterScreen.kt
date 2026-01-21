@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,8 +43,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun RegisterScreen(
-    viewModel: AuthViewModel
-    //TODO NAV
+    viewModel: AuthViewModel,
+    onBackToLogin: () -> Unit
 ) {
     val state = viewModel.state.collectAsState().value
 
@@ -56,6 +57,14 @@ fun RegisterScreen(
     val isPasswordValid = password.length >= 6
     val isNameValid = fullName.trim().length >= 3
     val canRegister = isEmailValid && isPasswordValid && isNameValid && !state.isLoading
+
+    LaunchedEffect(state.isSuccess) {
+        if (state.isSuccess) {
+            onBackToLogin()
+        }
+    }
+
+    //TODO estilizar mensajes de error
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -198,7 +207,9 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { viewModel.register(email, password, fullName) },
+                onClick = {
+                    viewModel.register(email, password, fullName)
+                },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = MaterialTheme.shapes.small,
                 colors = ButtonDefaults.buttonColors(
@@ -231,7 +242,7 @@ fun RegisterScreen(
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                TextButton(onClick = {}) {
+                TextButton(onClick = { onBackToLogin() }) {
                     Text(
                         text = "Inicia sesión",
                         style = MaterialTheme.typography.bodyLarge,
