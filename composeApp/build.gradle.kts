@@ -1,5 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -29,14 +30,19 @@ kotlin {
     jvm()
     
     sourceSets {
+
+        val commonMain by getting
+        
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation("io.ktor:ktor-client-okhttp:3.3.3")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
+            implementation(compose.materialIconsExtended)
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.preview)
@@ -50,7 +56,19 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation("io.ktor:ktor-client-okhttp:3.3.3")
         }
+
+        val iosMain by creating {
+            dependsOn(commonMain)
+            dependencies {
+                // 🔥 Ktor engine iOS
+                implementation("io.ktor:ktor-client-darwin:3.3.3")
+            }
+        }
+
+        val iosArm64Main by getting { dependsOn(iosMain) }
+        val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
     }
 }
 
