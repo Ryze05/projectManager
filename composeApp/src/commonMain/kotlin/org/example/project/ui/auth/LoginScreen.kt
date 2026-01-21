@@ -37,25 +37,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun RegisterScreen(
+fun LoginScreen(
     viewModel: AuthViewModel
-    //TODO NAV
 ) {
     val state = viewModel.state.collectAsState().value
-
-    var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
     val isEmailValid = email.contains("@") && email.contains(".")
     val isPasswordValid = password.length >= 6
-    val isNameValid = fullName.trim().length >= 3
-    val canRegister = isEmailValid && isPasswordValid && isNameValid && !state.isLoading
+    val canLogin = isEmailValid && isPasswordValid && !state.isLoading
+
+    //TODO NAV
+    /*LaunchedEffect(state.isSuccess) {
+        if (state.isSuccess) {
+
+        }
+    }*/
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -66,64 +68,35 @@ fun RegisterScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.Start,
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+
+            //TODO LOGO
+
             Text(
-                text = "Crear cuenta",
+                text = "Gestión de proyectos",
                 style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
+                //textAlign = TextAlign.Justify,
             )
 
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "Únete a nuestra plataforma de gestión y empieza a organizar tus proyectos hoy mismo",
+                text = "Inicia sesión para continuar",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Justify
+                //textAlign = TextAlign.Justify,
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "Nombre Completo",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = fullName,
-                onValueChange = { fullName = it },
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.small,
-                isError = fullName.isNotEmpty() && !isNameValid,
-                placeholder = {
-                    Text(
-                        text = "Tu nombre",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                },
-                supportingText = {
-                    if (fullName.isNotEmpty() && !isNameValid) {
-                        Text(
-                            text = "Introduce al menos 3 caracteres",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
                 text = "Correo Electrónico",
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -157,7 +130,8 @@ fun RegisterScreen(
             Text(
                 text = "Contraseña",
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -195,17 +169,19 @@ fun RegisterScreen(
                 }
             )
 
+            //TODO RECUPERAR CONTRASEÑA
+
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { viewModel.register(email, password, fullName) },
+                onClick = { viewModel.login(email, password) },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = MaterialTheme.shapes.small,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                 ),
-                enabled = canRegister
+                enabled = canLogin
             ) {
                 if (state.isLoading) {
                     CircularProgressIndicator(
@@ -214,7 +190,7 @@ fun RegisterScreen(
                     )
                 } else {
                     Text(
-                        "Registrarse",
+                        "Iniciar Sesión",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
@@ -227,31 +203,19 @@ fun RegisterScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "¿Ya tienes una cuenta? ",
+                    "¿No tienes una cuenta? ",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 TextButton(onClick = {}) {
                     Text(
-                        text = "Inicia sesión",
+                        text = "Regístrate",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            state.errorMessage?.let { error ->
-                Text(
-                    text = error,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-            }
         }
     }
-
 }
