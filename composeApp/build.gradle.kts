@@ -63,7 +63,6 @@ kotlin {
         val iosMain by creating {
             dependsOn(commonMain)
             dependencies {
-                // 🔥 Ktor engine iOS
                 implementation(libs.ktor.client.darwin)
             }
         }
