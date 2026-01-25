@@ -63,6 +63,7 @@ fun RegisterScreen(
     LaunchedEffect(state.isSuccess) {
         if (state.isSuccess) {
             onBackToLogin()
+            viewModel.clearState()
         }
     }
 
@@ -76,7 +77,7 @@ fun RegisterScreen(
                     .padding(innerPadding)
                     .padding(horizontal = 20.dp)
                     .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.Start,
+                horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
@@ -99,7 +100,8 @@ fun RegisterScreen(
                 Text(
                     text = "Nombre Completo",
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -133,7 +135,8 @@ fun RegisterScreen(
                 Text(
                     text = "Correo Electrónico",
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -167,7 +170,8 @@ fun RegisterScreen(
                 Text(
                     text = "Contraseña",
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))

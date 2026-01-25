@@ -1,5 +1,6 @@
 package org.example.project.ui.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,12 +36,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import org.example.project.ui.components.ErrorBanner
+import org.jetbrains.compose.resources.painterResource
+import projectmanager.composeapp.generated.resources.Res
+import projectmanager.composeapp.generated.resources.logo
 
 @Composable
 fun LoginScreen(
@@ -60,6 +65,7 @@ fun LoginScreen(
     LaunchedEffect(state.isSuccess) {
         if (state.isSuccess) {
             onLoginSuccess()
+            viewModel.clearState()
         }
     }
 
@@ -76,8 +82,15 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
+                Image(
+                    painter = painterResource(Res.drawable.logo),
+                    contentDescription = "Logo",
+                    modifier = Modifier
+                        .size(150.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                )
 
-                //TODO LOGO
+                Spacer(modifier = Modifier.height(32.dp))
 
                 Text(
                     text = "Gestión de proyectos",
