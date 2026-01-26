@@ -49,7 +49,7 @@ class AuthRepository() {
         // Accedemos a los metadatos que guardaste como "full_name"
         return user?.userMetadata?.get("full_name")?.jsonPrimitive?.content
     }
-    // En AuthRepository.kt
+
     fun getCurrentUserEmail(): String? {
         return SupabaseClient.client.auth.currentUserOrNull()?.email
     }
