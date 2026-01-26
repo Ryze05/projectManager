@@ -58,7 +58,7 @@ val sUrl = props.getProperty("supabase.url") ?: "https://default.url"
 val sKey = props.getProperty("supabase.key") ?: "default_key"
 
 extensions.configure<com.codingfeline.buildkonfig.gradle.BuildKonfigExtension> {
-    packageName = "org.example.project.shared" // -> C:\Users\Propietario\Desktop\proyectos\projectManager\projectManager\shared
+    packageName = "org.example.project.shared"
 
     defaultConfigs {
         buildConfigField(Type.STRING, "SUPABASE_URL", sUrl)

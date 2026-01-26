@@ -2,6 +2,7 @@ package org.example.project.repository
 
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.user.UserSession
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
@@ -36,8 +37,12 @@ class AuthRepository() {
         }
     }
 
-    fun isUserLoggedIn(): Boolean {
-        return SupabaseClient.client.auth.currentSessionOrNull() != null
+    suspend fun isUserLoggedIn(): Boolean {
+        SupabaseClient.client.auth.awaitInitialization()
+
+        val user = SupabaseClient.client.auth.currentUserOrNull()
+
+        return user != null
     }
     fun getCurrentUserName(): String? {
         val user = SupabaseClient.client.auth.currentUserOrNull()

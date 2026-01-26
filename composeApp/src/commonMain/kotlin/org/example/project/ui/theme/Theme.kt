@@ -14,7 +14,8 @@ private val LightColorScheme = lightColorScheme(
     onSurface = TextBlack, // Color del texto en cards
     onSurfaceVariant = TextSecondary, // Textos secundarios
     outline = GrayBorder, // Bordes de los inputs
-    error = Color(0xFFBA1A1A), // Mensajes de error
+    error = BackgroundError, // Mensajes de error
+    onError = Color.White // Color del fondo de los mensajes de error
 )
 
 @Composable
