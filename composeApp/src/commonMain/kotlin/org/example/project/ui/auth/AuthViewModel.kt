@@ -42,4 +42,10 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     fun clearState() {
         _state.update { AuthState() }
     }
+    fun logout() {
+        viewModelScope.launch {
+            repository.signOut()
+            // Aquí podrías resetear estados si es necesario
+        }
+    }
 }
