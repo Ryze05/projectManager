@@ -21,15 +21,7 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
             result.onSuccess {
                 _state.update { it.copy(isLoading = false, isSuccess = true) }
             }.onFailure { error ->
-                val errorMessage = error.message ?: ""
-
-                val friendlyMessage = when {
-                    errorMessage.contains("invalid_credentials", true) -> "El correo o la contraseña no son correctos."
-                    errorMessage.contains("network", true) -> "Revisa tu conexión a internet."
-                    else -> "Ha ocurrido un error. Inténtalo de nuevo."
-                }
-
-                _state.update { it.copy(isLoading = false, errorMessage = friendlyMessage) }
+                _state.update { it.copy(isLoading = false, errorMessage = error.message ?: "Login error") }
             }
         }
     }
@@ -42,26 +34,12 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
             result.onSuccess {
                 _state.update { it.copy(isLoading = false, isSuccess = true) }
             }.onFailure { error ->
-                val errorMessage = error.message ?: ""
-
-                val friendlyMessage = when {
-                    errorMessage.contains("already registered", true) -> "Este correo ya tiene una cuenta asociada."
-                    errorMessage.contains("network", true) -> "Sin conexión a internet."
-                    else -> "No se pudo crear la cuenta."
-                }
-
-                _state.update { it.copy(isLoading = false, errorMessage = friendlyMessage) }
+                _state.update { it.copy(isLoading = false, errorMessage = error.message ?: "Register error") }
             }
         }
     }
 
     fun clearState() {
         _state.update { AuthState() }
-    }
-
-    fun signOut() {
-        viewModelScope.launch {
-            repository.signOut()
-        }
     }
 }

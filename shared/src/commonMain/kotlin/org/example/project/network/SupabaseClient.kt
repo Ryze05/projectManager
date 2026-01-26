@@ -9,8 +9,8 @@ import org.example.project.shared.BuildKonfig
 
 object SupabaseClient {
     val client = createSupabaseClient(
-        supabaseUrl = BuildKonfig.SUPABASE_URL,
-        supabaseKey = BuildKonfig.SUPABASE_KEY
+        supabaseUrl = "https://oewefwftpmemkpikoaoy.supabase.co",
+        supabaseKey = "sb_publishable_mGr3kSniLoso5estX-sVVA_qGxlou0j"
     ) {
         install(Auth)
         install(Postgrest)

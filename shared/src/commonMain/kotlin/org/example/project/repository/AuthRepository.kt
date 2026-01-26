@@ -4,6 +4,7 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.user.UserSession
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import org.example.project.network.SupabaseClient
 
@@ -43,5 +44,13 @@ class AuthRepository() {
 
         return user != null
     }
-
+    fun getCurrentUserName(): String? {
+        val user = SupabaseClient.client.auth.currentUserOrNull()
+        // Accedemos a los metadatos que guardaste como "full_name"
+        return user?.userMetadata?.get("full_name")?.jsonPrimitive?.content
+    }
+    // En AuthRepository.kt
+    fun getCurrentUserEmail(): String? {
+        return SupabaseClient.client.auth.currentUserOrNull()?.email
+    }
 }
