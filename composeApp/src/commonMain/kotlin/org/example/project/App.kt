@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import org.example.project.repository.AuthRepository
+import org.example.project.repository.ProjectRepository
 import org.example.project.ui.auth.AuthViewModel
 import org.example.project.ui.auth.LoginScreen
 import org.example.project.ui.auth.RegisterScreen
@@ -20,14 +21,21 @@ import org.example.project.ui.home.HomeScreen
 import org.example.project.ui.projects.ProjectsScreen
 import org.example.project.ui.profile.ProfileScreen
 import org.example.project.ui.navigation.Screen
+import org.example.project.ui.projects.ProjectViewModel
 import org.example.project.ui.theme.ProjectManagerTheme
 
 @Composable
 fun App() {
     ProjectManagerTheme {
         val navController = rememberNavController()
+
+        // AUTH
         val authRepository = remember { AuthRepository() }
         val viewModelAuth = remember { AuthViewModel(authRepository) }
+
+        // PROJECTS
+        val projectRepository = remember { ProjectRepository() }
+        val viewModelProject = remember { ProjectViewModel(projectRepository) }
 
         // --- 1. LÓGICA DE SESIÓN PERSISTENTE ---
         var isLoadingSession by remember { mutableStateOf(true) }
@@ -118,7 +126,9 @@ fun App() {
                     }
 
                     composable(Screen.Projects.route) {
-                        ProjectsScreen()
+                        ProjectsScreen(
+                            viewModel = viewModelProject
+                        )
                     }
 
                     composable(Screen.Tasks.route) {

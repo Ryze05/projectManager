@@ -5,8 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Project(
-    val id: Int,
+    val id: Long? = null,
     val title: String,
-    @SerialName("created_at") val createdAt: String,
-    @SerialName("owner_id") val ownerId: String
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("owner_id") val ownerId: String? = null,
 )
