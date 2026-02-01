@@ -16,13 +16,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import org.example.project.repository.AuthRepository
 import org.example.project.ui.components.projects.ProjectCard
 
 @Composable
 fun ProjectsScreen(
     viewModel: ProjectViewModel = viewModel(),
-    authRepository: AuthRepository
+    authRepository: AuthRepository,
+    navController: NavController
 ) {
 
     var showDialog by remember { mutableStateOf(false) }
@@ -161,7 +163,7 @@ fun ProjectsScreen(
                     contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
                     items(state.projects) { project ->
-                        ProjectCard(project)
+                        ProjectCard(project, navController)
                     }
                 }
             }

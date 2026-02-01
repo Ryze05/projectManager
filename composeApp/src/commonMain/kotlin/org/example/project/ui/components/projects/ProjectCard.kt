@@ -1,6 +1,7 @@
 package org.example.project.ui.components.projects
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,18 +25,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import org.example.project.domain.models.Project
+import org.example.project.ui.navigation.Screen
 import org.example.project.ui.projects.ProjectUiState
 
 @Composable
-fun ProjectCard(project: Project) {
+fun ProjectCard(project: Project, navController: NavController) {
     val uiState = remember(project) { ProjectUiState(project) }
     val (statusTextColor, statusBgColor) = uiState.statusColors
 
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier.clickable{
+            navController.navigate(Screen.ProjectDetails.createRoute(project.id, project.title))
+        }
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Box(

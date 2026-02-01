@@ -8,10 +8,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import org.example.project.repository.AuthRepository
 import org.example.project.repository.ProjectRepository
 import org.example.project.ui.auth.AuthViewModel
@@ -21,6 +23,8 @@ import org.example.project.ui.home.HomeScreen
 import org.example.project.ui.projects.ProjectsScreen
 import org.example.project.ui.profile.ProfileScreen
 import org.example.project.ui.navigation.Screen
+import org.example.project.ui.projectDetail.ProjectDetailScreen
+import org.example.project.ui.projectDetail.ProjectDetailsViewModel
 import org.example.project.ui.projects.ProjectViewModel
 import org.example.project.ui.theme.ProjectManagerTheme
 
@@ -36,6 +40,9 @@ fun App() {
         // PROJECTS
         val projectRepository = remember { ProjectRepository() }
         val viewModelProject = remember { ProjectViewModel(projectRepository) }
+
+        // PROJECT DETAIL
+        val viewModelProjectDetail = remember { ProjectDetailsViewModel(projectRepository) }
 
         // --- 1. LÓGICA DE SESIÓN PERSISTENTE ---
         var isLoadingSession by remember { mutableStateOf(true) }
@@ -128,7 +135,8 @@ fun App() {
                     composable(Screen.Projects.route) {
                         ProjectsScreen(
                             viewModel = viewModelProject,
-                            authRepository = authRepository
+                            authRepository = authRepository,
+                            navController = navController
                         )
                     }
 
@@ -147,6 +155,24 @@ fun App() {
                                     popUpTo(0)
                                 }
                             }
+                        )
+                    }
+
+                    composable(
+                        route = Screen.ProjectDetails.route,
+                        arguments = listOf(
+                            navArgument("projectId") { type = NavType.LongType },
+                            navArgument("projectName") { type = NavType.StringType }
+                        )
+                    ) { backStackEntry ->
+                        val id = backStackEntry.arguments?.getLong("projectId") ?: 0L
+                        val name = backStackEntry.arguments?.getString("projectName") ?: "Proyecto"
+
+                        ProjectDetailScreen(
+                            projectId = id,
+                            projectName = name,
+                            onBack = { navController.popBackStack() },
+                            viewModel = viewModelProjectDetail
                         )
                     }
                 }
