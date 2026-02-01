@@ -46,11 +46,14 @@ class AuthRepository() {
     }
     fun getCurrentUserName(): String? {
         val user = SupabaseClient.client.auth.currentUserOrNull()
-        // Accedemos a los metadatos que guardaste como "full_name"
         return user?.userMetadata?.get("full_name")?.jsonPrimitive?.content
     }
 
     fun getCurrentUserEmail(): String? {
         return SupabaseClient.client.auth.currentUserOrNull()?.email
+    }
+
+    fun getCurrentUserId(): String? {
+        return SupabaseClient.client.auth.currentUserOrNull()?.id
     }
 }

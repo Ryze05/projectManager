@@ -1,6 +1,5 @@
 package org.example.project.ui.projects
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,33 +12,104 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import org.example.project.repository.AuthRepository
+import org.example.project.ui.components.projects.ProjectCard
 
 @Composable
-fun ProjectsScreen(viewModel: ProjectViewModel) {
+fun ProjectsScreen(
+    viewModel: ProjectViewModel = viewModel(),
+    authRepository: AuthRepository
+) {
+
+    var showDialog by remember { mutableStateOf(false) }
+    var newProjectTitle by remember { mutableStateOf("") }
+
     var selectedTab by remember { mutableIntStateOf(0) }
     val state by viewModel.state.collectAsState()
     val tabs = listOf("Activos", "Completados", "Archivados")
 
+    //TODO Optimizar cambios de proyectos entre tabs
+    val currentStatus = when (selectedTab) {
+        0 -> "active"
+        1 -> "completed"
+        else -> "archived"
+    }
+
+    LaunchedEffect(selectedTab) {
+        val userId = authRepository.getCurrentUserId()
+        if (userId != null) {
+            viewModel.loadProjectsByUserAndStatus(userId, currentStatus)
+        }
+    }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* Acción Nuevo Proyecto */ },
-                containerColor = Color(0xFF2563EB), // Azul del diseño
+                onClick = { showDialog = true },
+                containerColor = Color(0xFF2563EB),
                 contentColor = Color.White,
                 shape = CircleShape
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Crear")
             }
         },
-        containerColor = Color(0xFFF5F6FA) // Fondo gris claro
+        containerColor = Color(0xFFF5F6FA)
     ) { padding ->
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Nuevo Proyecto", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column {
+                        Text("Introduce el nombre del proyecto:")
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = newProjectTitle,
+                            onValueChange = { newProjectTitle = it },
+                            placeholder = { Text("Ej: Rediseño Web") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
+                        onClick = {
+                            if (newProjectTitle.isNotBlank()) {
+                                val userId = authRepository.getCurrentUserId()
+                                if (userId != null) {
+                                    viewModel.createProject(newProjectTitle, userId, currentStatus)
+                                }
+                                newProjectTitle = ""
+                                showDialog = false
+                            }
+                        }
+                    ) {
+                        Text("Crear Proyecto")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text("Cancelar", color = Color.Gray)
+                    }
+                }
+            )
+        }
+
         if (state.isLoading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
+            }
+        } else if (state.error != null) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Error: ${state.error}", color = MaterialTheme.colorScheme.error)
             }
         } else {
             Column(
@@ -50,7 +120,6 @@ fun ProjectsScreen(viewModel: ProjectViewModel) {
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Título
                 Text(
                     text = "Proyectos",
                     style = MaterialTheme.typography.headlineLarge,
@@ -59,7 +128,6 @@ fun ProjectsScreen(viewModel: ProjectViewModel) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Tabs Superiores Customizados
                 TabRow(
                     selectedTabIndex = selectedTab,
                     containerColor = Color.Transparent,
@@ -88,12 +156,11 @@ fun ProjectsScreen(viewModel: ProjectViewModel) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Lista de Proyectos
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
-                    items(getDummyProjects()) { project ->
+                    items(state.projects) { project ->
                         ProjectCard(project)
                     }
                 }
@@ -101,88 +168,3 @@ fun ProjectsScreen(viewModel: ProjectViewModel) {
         }
     }
 }
-
-@Composable
-fun ProjectCard(project: ProjectData) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            // Header de color (simula la imagen del diseño)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .background(project.headerColor)
-            )
-
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = project.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
-                    )
-                    // Badge de estado
-                    Surface(
-                        color = project.statusBgColor,
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Text(
-                            text = project.statusText.uppercase(),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = project.statusTextColor,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Fecha límite: ${project.date}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("Progreso del proyecto", style = MaterialTheme.typography.bodySmall)
-                    Text("${(project.progress * 100).toInt()}%", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = Color(0xFF2563EB))
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                LinearProgressIndicator(
-                    progress = { project.progress },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp)),
-                    color = Color(0xFF2563EB),
-                    trackColor = Color(0xFFE0E0E0),
-                )
-            }
-        }
-    }
-}
-
-// Datos falsos para visualización
-data class ProjectData(val title: String, val date: String, val statusText: String, val statusTextColor: Color, val statusBgColor: Color, val headerColor: Color, val progress: Float)
-
-fun getDummyProjects() = listOf(
-    ProjectData("Rediseño Web Corporativa", "25 de Octubre", "En Curso", Color(0xFF1565C0), Color(0xFFBBDEFB), Color(0xFFFFF3E0), 0.65f),
-    ProjectData("Campaña Marketing Q4", "15 de Noviembre", "Prioridad Alta", Color(0xFF1565C0), Color(0xFFE3F2FD), Color(0xFF80CBC4), 0.30f),
-    ProjectData("App Móvil Logística", "05 de Diciembre", "Al día", Color(0xFF2E7D32), Color(0xFFC8E6C9), Color(0xFFE1BEE7), 0.85f)
-)

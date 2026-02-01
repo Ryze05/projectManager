@@ -42,7 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import org.example.project.ui.components.ErrorBanner
+import org.example.project.ui.components.errorBanners.ErrorBanner
 import org.jetbrains.compose.resources.painterResource
 import projectmanager.composeapp.generated.resources.Res
 import projectmanager.composeapp.generated.resources.logo

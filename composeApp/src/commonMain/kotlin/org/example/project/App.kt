@@ -127,7 +127,8 @@ fun App() {
 
                     composable(Screen.Projects.route) {
                         ProjectsScreen(
-                            viewModel = viewModelProject
+                            viewModel = viewModelProject,
+                            authRepository = authRepository
                         )
                     }
 

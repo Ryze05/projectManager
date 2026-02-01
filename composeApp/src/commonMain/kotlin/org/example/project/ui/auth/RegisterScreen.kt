@@ -41,7 +41,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.example.project.ui.components.ErrorBanner
+import org.example.project.ui.components.errorBanners.ErrorBanner
 
 @Composable
 fun RegisterScreen(
