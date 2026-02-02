@@ -16,6 +16,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import org.example.project.repository.AuthRepository
 import org.example.project.repository.ProjectRepository
+import org.example.project.repository.SectionRepository
+import org.example.project.repository.TaskRepository
 import org.example.project.ui.auth.AuthViewModel
 import org.example.project.ui.auth.LoginScreen
 import org.example.project.ui.auth.RegisterScreen
@@ -42,7 +44,9 @@ fun App() {
         val viewModelProject = remember { ProjectViewModel(projectRepository) }
 
         // PROJECT DETAIL
-        val viewModelProjectDetail = remember { ProjectDetailsViewModel(projectRepository) }
+        val sectionRepository = remember { SectionRepository() }
+        val taskRepository = remember { TaskRepository() }
+        val viewModelProjectDetail = remember { ProjectDetailsViewModel(projectRepository, sectionRepository, taskRepository) }
 
         // --- 1. LÓGICA DE SESIÓN PERSISTENTE ---
         var isLoadingSession by remember { mutableStateOf(true) }

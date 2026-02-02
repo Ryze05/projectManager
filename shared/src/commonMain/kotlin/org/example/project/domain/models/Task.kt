@@ -1,5 +1,6 @@
 package org.example.project.domain.models
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 @Serializable
 data class Task(
@@ -7,6 +8,7 @@ data class Task(
     val title: String,
     val description: String? = null,
     val section_id: Long,
-    val position: Int = 0,
-    val created_at: String? = null
+    val priority: String = "media",
+    val created_at: String? = null,
+    @SerialName("due_date") val dueDate: String? = null
 )

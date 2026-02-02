@@ -20,6 +20,7 @@ supabase = "3.3.0"
 kotlinx-serialization = "1.8.0"
 buildkonfig = "0.15.1"
 navigationCompose = "2.8.0-alpha10"
+kotlinx-datetime = "0.6.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -47,6 +48,7 @@ supabase-realtime = { module = "io.github.jan-tennert.supabase:realtime-kt", ver
 supabase-storage = { module = "io.github.jan-tennert.supabase:storage-kt", version.ref = "supabase" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 jetbrains-compose-navigation = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
