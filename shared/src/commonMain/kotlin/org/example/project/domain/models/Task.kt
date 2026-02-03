@@ -10,5 +10,6 @@ data class Task(
     val section_id: Long,
     val priority: String = "media",
     val created_at: String? = null,
-    @SerialName("due_date") val dueDate: String? = null
+    @SerialName("due_date") val dueDate: String? = null,
+    val profiles: List<Profile> = emptyList()
 )

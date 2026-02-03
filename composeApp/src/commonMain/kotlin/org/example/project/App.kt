@@ -28,6 +28,8 @@ import org.example.project.ui.navigation.Screen
 import org.example.project.ui.projectDetail.ProjectDetailScreen
 import org.example.project.ui.projectDetail.ProjectDetailsViewModel
 import org.example.project.ui.projects.ProjectViewModel
+import org.example.project.ui.taskDetail.TaskDetailScreen
+import org.example.project.ui.taskDetail.TaskDetailViewModel
 import org.example.project.ui.theme.ProjectManagerTheme
 
 @Composable
@@ -47,6 +49,10 @@ fun App() {
         val sectionRepository = remember { SectionRepository() }
         val taskRepository = remember { TaskRepository() }
         val viewModelProjectDetail = remember { ProjectDetailsViewModel(projectRepository, sectionRepository, taskRepository) }
+
+        // TASK DETAIL
+        val viewModelTaskDetail = remember { TaskDetailViewModel(taskRepository, projectRepository) }
+
 
         // --- 1. LÓGICA DE SESIÓN PERSISTENTE ---
         var isLoadingSession by remember { mutableStateOf(true) }
@@ -176,7 +182,28 @@ fun App() {
                             projectId = id,
                             projectName = name,
                             onBack = { navController.popBackStack() },
-                            viewModel = viewModelProjectDetail
+                            viewModel = viewModelProjectDetail,
+                            onTaskClick = { taskId ->
+                                navController.navigate(Screen.TaskDetails.createRoute(taskId, id))
+                            }
+                        )
+                    }
+
+                    composable(
+                        route = Screen.TaskDetails.route,
+                        arguments = listOf(
+                            navArgument("taskId") { type = NavType.LongType },
+                            navArgument("projectId") { type = NavType.LongType }
+                        )
+                    ) { backStackEntry ->
+                        val taskId = backStackEntry.arguments?.getLong("taskId") ?: 0L
+                        val projectId = backStackEntry.arguments?.getLong("projectId") ?: 0L
+
+                        TaskDetailScreen(
+                            taskId = taskId,
+                            projectId = projectId,
+                            viewModel = viewModelTaskDetail,
+                            onBack = { navController.popBackStack() }
                         )
                     }
                 }

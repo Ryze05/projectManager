@@ -1,4 +1,4 @@
-package org.example.project.ui.components.Task
+package org.example.project.ui.components.task
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

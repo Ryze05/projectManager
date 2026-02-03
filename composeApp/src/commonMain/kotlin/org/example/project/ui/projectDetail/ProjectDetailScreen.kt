@@ -1,6 +1,7 @@
 package org.example.project.ui.projectDetail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,7 +72,8 @@ fun ProjectDetailScreen(
     projectId: Long,
     projectName: String,
     viewModel: ProjectDetailsViewModel = viewModel(),
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onTaskClick: (Long) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
@@ -364,7 +366,10 @@ fun ProjectDetailScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp),
+                                .padding(vertical = 4.dp)
+                                .clickable{
+                                    onTaskClick(it.id!!)
+                                },
                             colors = CardDefaults.cardColors(containerColor = Color.White),
                             shape = RoundedCornerShape(16.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)

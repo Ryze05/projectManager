@@ -12,20 +12,6 @@ class ProjectViewModel(private val projectRepository: ProjectRepository): ViewMo
     private val _state = MutableStateFlow(ProjectState())
     val state = _state.asStateFlow()
 
-    //Todos los proyectos
-    fun loadAllProjects() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            try {
-                val projects = projectRepository.getProjectsMember()
-                _state.update { it.copy(isLoading = false, projects = projects) }
-            } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = e.message) }
-            }
-        }
-    }
-
-    //Projectos donde el Usuario es miembro
     fun loadProjectsByUserAndStatus(profileId: String, status: String) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
@@ -39,7 +25,6 @@ class ProjectViewModel(private val projectRepository: ProjectRepository): ViewMo
         }
     }
 
-    //Crear un nuevo projecto
     fun createProject(title: String, ownerId: String, currentStatus: String) {
         viewModelScope.launch {
             _state.update { it.copy(error = null) }

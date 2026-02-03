@@ -25,7 +25,9 @@ class ProjectDetailsViewModel(
             try {
                 val sectionsWithTasks = projectRepository.getProjectSectionsWithTasks(projectId)
 
-                _state.update { it.copy(sections = sectionsWithTasks, isLoading = false) }
+                val members = projectRepository.getProjectMembers(projectId)
+
+                _state.update { it.copy(sections = sectionsWithTasks, projectMembers = members,isLoading = false) }
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = "Error al cargar el tablero: ${e.message}") }
             }

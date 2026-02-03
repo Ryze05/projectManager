@@ -1,4 +1,4 @@
-package org.example.project.ui.components.Section
+package org.example.project.ui.components.section
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size

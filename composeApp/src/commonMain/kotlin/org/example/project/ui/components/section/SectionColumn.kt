@@ -1,4 +1,4 @@
-package org.example.project.ui.components.Section
+package org.example.project.ui.components.section
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,7 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.example.project.domain.models.Section
-import org.example.project.ui.components.Task.TaskItem
+import org.example.project.ui.components.task.TaskItem
 
 @Composable
 fun SectionColumn(section: Section) {
