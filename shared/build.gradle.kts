@@ -23,9 +23,9 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(project.dependencies.platform(libs.supabase.bom))
-            implementation(libs.supabase.auth)
-            implementation(libs.supabase.postgrest)
+            api(project.dependencies.platform(libs.supabase.bom))
+            api(libs.supabase.auth)
+            api(libs.supabase.postgrest)
             implementation(libs.supabase.realtime)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.supabase.storage)

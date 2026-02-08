@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.example.project.domain.models.ProjectMember
 import org.example.project.repository.ProjectRepository
 import org.example.project.repository.SectionRepository
 import org.example.project.repository.TaskRepository
@@ -18,18 +19,16 @@ class ProjectDetailsViewModel(
     private val _state = MutableStateFlow(ProjectDetailsState())
     val state = _state.asStateFlow()
 
-    fun loadProjectContent(projectId: Long, projectName: String) {
-        _state.update { it.copy(projectName = projectName, isLoading = true, error = null) }
+    fun loadProjectContent(projectId: Long, projectName: String, userId: String) {
+        _state.update { it.copy(projectName = projectName, currentUserId = userId, isLoading = true, error = null) }
 
         viewModelScope.launch {
             try {
-                val sectionsWithTasks = projectRepository.getProjectSectionsWithTasks(projectId)
-
+                val sectionsWithTasks = projectRepository.getProjectSectionsWithTasks(projectId, userId)
                 val members = projectRepository.getProjectMembers(projectId)
-
-                _state.update { it.copy(sections = sectionsWithTasks, projectMembers = members,isLoading = false) }
+                _state.update { it.copy(sections = sectionsWithTasks, projectMembers = members, isLoading = false) }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = "Error al cargar el tablero: ${e.message}") }
+                _state.update { it.copy(isLoading = false, error = "Error: ${e.message}") }
             }
         }
     }
@@ -38,7 +37,7 @@ class ProjectDetailsViewModel(
         viewModelScope.launch {
             try {
                 sectionRepository.createSection(name, projectId, priority)
-                loadProjectContent(projectId, _state.value.projectName)
+                loadProjectContent(projectId, _state.value.projectName, _state.value.currentUserId)
             } catch (e: Exception) {
                 _state.update { it.copy(error = "Error al crear sección") }
             }
@@ -49,10 +48,37 @@ class ProjectDetailsViewModel(
         viewModelScope.launch {
             try {
                 taskRepository.createTask(title, description, sectionId, priority, dueDate)
-                loadProjectContent(projectId, _state.value.projectName)
+                loadProjectContent(projectId, _state.value.projectName, _state.value.currentUserId)
             } catch (e: Exception) {
-                println("❌ Error en addTask: ${e.message}")
                 _state.update { it.copy(error = "Error al crear la tarea") }
+            }
+        }
+    }
+
+    fun addMember(profileId: String, projectId: Long) {
+        viewModelScope.launch {
+            try {
+                val newMember = ProjectMember(profileId = profileId, projectId = projectId)
+                projectRepository.addMemberToProject(newMember)
+                loadProjectContent(projectId, _state.value.projectName, _state.value.currentUserId)
+            } catch (e: Exception) {
+                _state.update { it.copy(error = "Error al añadir miembro") }
+            }
+        }
+    }
+
+    fun loadAvailableUsers() {
+        viewModelScope.launch {
+            try {
+                val allProfiles = projectRepository.getAllProfiles()
+
+                val currentMemberIds = _state.value.projectMembers.map { it.id }
+
+                val available = allProfiles.filter { it.id !in currentMemberIds }
+
+                _state.update { it.copy(allUsers = available) }
+            } catch (e: Exception) {
+                _state.update { it.copy(error = "Error al cargar usuarios disponibles") }
             }
         }
     }

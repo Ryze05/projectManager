@@ -15,11 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.PriorityHigh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -37,6 +39,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -76,7 +79,17 @@ fun TaskDetailScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
                     }
-                }
+                },
+                actions = {
+                    IconButton(onClick = { showMemberSelector = true }) {
+                        Icon(
+                            imageVector = Icons.Default.GroupAdd,
+                            contentDescription = "Invitar miembro",
+                            tint = Color(0xFF2563EB)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF5F6FA))
             )
         }
     ) { padding ->
@@ -163,10 +176,10 @@ fun TaskDetailScreen(
 
                     item {
                         Column {
-                            Text("Miembros del equipo", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text("Miembros asignados", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(12.dp))
 
-                            Button(
+                            /*Button(
                                 onClick = { showMemberSelector = true },
                                 modifier = Modifier.fillMaxWidth().height(52.dp),
                                 shape = RoundedCornerShape(12.dp),
@@ -181,7 +194,7 @@ fun TaskDetailScreen(
                                 Text("Añadir Miembro", fontWeight = FontWeight.Bold)
                             }
 
-                            Spacer(Modifier.height(12.dp))
+                            Spacer(Modifier.height(12.dp))*/
 
                             Card(
                                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -209,59 +222,112 @@ fun TaskDetailScreen(
                 if (showMemberSelector) {
                     AlertDialog(
                         onDismissRequest = { showMemberSelector = false },
-                        confirmButton = {},
-                        dismissButton = {
-                            TextButton(onClick = { showMemberSelector = false }) {
-                                Text("Cancelar")
-                            }
+                        shape = RoundedCornerShape(28.dp),
+                        containerColor = Color.White,
+                        title = {
+                            Text(
+                                text = "Asignar a la tarea",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.ExtraBold
+                            )
                         },
-                        title = { Text("Asignar Miembro", fontWeight = FontWeight.Bold) },
                         text = {
-                            Column(modifier = Modifier.fillMaxWidth()) {
+                            Column(modifier = Modifier.fillMaxWidth().heightIn(max = 450.dp)) {
+                                Text(
+                                    text = "Selecciona un miembro del proyecto para asignarlo a esta tarea.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.Gray,
+                                    modifier = Modifier.padding(bottom = 16.dp)
+                                )
+
                                 if (state.projectMembers.isEmpty()) {
-                                    Text("No hay miembros disponibles en este proyecto.", style = MaterialTheme.typography.bodySmall)
+                                    Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                                        Text("No hay miembros en el proyecto", color = Color.LightGray)
+                                    }
                                 } else {
-                                    LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
+                                    LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                         items(state.projectMembers.size) { index ->
                                             val member = state.projectMembers[index]
-
                                             val isAlreadyAssigned = state.task?.profiles?.any { it.id == member.id } == true
 
-                                            androidx.compose.material3.ListItem(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .clickable(enabled = !isAlreadyAssigned) {
+                                            Surface(
+                                                onClick = {
+                                                    if (!isAlreadyAssigned) {
                                                         viewModel.assignMember(member.id, projectId)
                                                         showMemberSelector = false
-                                                    },
-                                                headlineContent = {
-                                                    Text(
-                                                        member.fullName,
-                                                        color = if (isAlreadyAssigned) Color.Gray else Color.Unspecified
-                                                    )
+                                                    }
                                                 },
-                                                supportingContent = { Text(member.email) },
-                                                leadingContent = {
+                                                shape = RoundedCornerShape(16.dp),
+                                                // Si ya está asignado, lo ponemos más oscuro/transparente
+                                                color = if (isAlreadyAssigned) Color(0xFFF1F5F9) else Color(0xFFF8FAFC),
+                                                border = BorderStroke(
+                                                    width = 1.dp,
+                                                    color = if (isAlreadyAssigned) Color.Transparent else Color(0xFFE2E8F0)
+                                                ),
+                                                enabled = !isAlreadyAssigned
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(12.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    // Avatar con lógica de color según estado
                                                     Surface(
-                                                        modifier = Modifier.size(32.dp),
-                                                        shape = androidx.compose.foundation.shape.CircleShape,
-                                                        color = if (isAlreadyAssigned) Color.LightGray else Color(0xFFE2E8F0)
+                                                        modifier = Modifier.size(40.dp),
+                                                        shape = CircleShape,
+                                                        color = if (isAlreadyAssigned) Color.LightGray else Color(0xFFDBEAFE)
                                                     ) {
                                                         Box(contentAlignment = Alignment.Center) {
-                                                            Text(member.fullName.take(1).uppercase())
+                                                            Text(
+                                                                text = member.fullName.take(1).uppercase(),
+                                                                style = MaterialTheme.typography.titleMedium,
+                                                                fontWeight = FontWeight.Bold,
+                                                                color = if (isAlreadyAssigned) Color.White else Color(0xFF2563EB)
+                                                            )
                                                         }
                                                     }
-                                                },
-                                                trailingContent = {
+
+                                                    Spacer(Modifier.width(12.dp))
+
+                                                    Column(modifier = Modifier.weight(1f)) {
+                                                        Text(
+                                                            text = member.fullName,
+                                                            style = MaterialTheme.typography.bodyLarge,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = if (isAlreadyAssigned) Color.Gray else Color.Black
+                                                        )
+                                                        Text(
+                                                            text = member.email,
+                                                            style = MaterialTheme.typography.labelMedium,
+                                                            color = Color.Gray
+                                                        )
+                                                    }
+
                                                     if (isAlreadyAssigned) {
-                                                        Text("Asignado", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                                                        Surface(
+                                                            color = Color(0xFFE2E8F0),
+                                                            shape = RoundedCornerShape(8.dp)
+                                                        ) {
+                                                            Text(
+                                                                text = "Asignado",
+                                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                                style = MaterialTheme.typography.labelSmall,
+                                                                fontWeight = FontWeight.Bold,
+                                                                color = Color.DarkGray
+                                                            )
+                                                        }
                                                     }
                                                 }
-                                            )
-                                            HorizontalDivider(color = Color(0xFFF1F5F9))
+                                            }
                                         }
                                     }
                                 }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showMemberSelector = false }) {
+                                Text("Cerrar", fontWeight = FontWeight.Bold, color = Color(0xFF2563EB))
                             }
                         }
                     )

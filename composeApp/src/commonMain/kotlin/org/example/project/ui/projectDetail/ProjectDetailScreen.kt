@@ -1,5 +1,6 @@
 package org.example.project.ui.projectDetail
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -35,6 +38,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -61,10 +65,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.jan.supabase.auth.auth
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.Instant
+import org.example.project.network.SupabaseClient
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,10 +101,17 @@ fun ProjectDetailScreen(
     val timePickerState = rememberTimePickerState(initialHour = 23, initialMinute = 59)
     var showTimePicker by remember { mutableStateOf(false) }
 
+    //INVITAR MIEMBROS
+    var showInviteDialog by remember { mutableStateOf(false) }
+
     val priorities = listOf("baja", "media", "alta")
 
+    val currentUserId = remember { SupabaseClient.client.auth.currentUserOrNull()?.id ?: "" }
+
     LaunchedEffect(projectId) {
-        viewModel.loadProjectContent(projectId, projectName)
+        if (currentUserId.isNotEmpty()) {
+            viewModel.loadProjectContent(projectId, projectName, currentUserId)
+        }
     }
 
     fun combineDateTimeToIso(dateMillis: Long?, hour: Int, minute: Int): String? {
@@ -132,6 +145,15 @@ fun ProjectDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showInviteDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.GroupAdd,
+                            contentDescription = "Invitar miembro",
+                            tint = Color(0xFF2563EB)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF5F6FA))
@@ -304,6 +326,105 @@ fun ProjectDetailScreen(
             )
         }
 
+        if (showInviteDialog) {
+            LaunchedEffect(Unit) { viewModel.loadAvailableUsers() }
+
+            AlertDialog(
+                onDismissRequest = { showInviteDialog = false },
+                shape = RoundedCornerShape(28.dp), // Esquinas mucho más redondeadas (estilo moderno)
+                containerColor = Color.White,
+                title = {
+                    Text(
+                        text = "Invitar al equipo",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                },
+                text = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 400.dp) // Un poco más de aire para la lista
+                    ) {
+                        Text(
+                            text = "Selecciona un usuario para añadirlo al proyecto.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
+                        if (state.allUsers.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("No hay usuarios disponibles", color = Color.LightGray)
+                            }
+                        } else {
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(8.dp) // Espacio entre items en lugar de líneas divisorias
+                            ) {
+                                items(state.allUsers) { user ->
+                                    Surface(
+                                        onClick = {
+                                            viewModel.addMember(user.id, projectId)
+                                            showInviteDialog = false
+                                        },
+                                        shape = RoundedCornerShape(16.dp),
+                                        color = Color(0xFFF8FAFC), // Un fondo gris casi imperceptible para dar profundidad
+                                        border = BorderStroke(1.dp, Color(0xFFF1F5F9))
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(12.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            // Avatar mejorado
+                                            Surface(
+                                                modifier = Modifier.size(40.dp),
+                                                shape = CircleShape,
+                                                color = Color(0xFFDBEAFE) // Azul muy claro
+                                            ) {
+                                                Box(contentAlignment = Alignment.Center) {
+                                                    Text(
+                                                        text = user.fullName.take(1).uppercase(),
+                                                        style = MaterialTheme.typography.titleMedium,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = Color(0xFF2563EB) // Texto azul fuerte
+                                                    )
+                                                }
+                                            }
+
+                                            Spacer(Modifier.width(12.dp))
+
+                                            Column {
+                                                Text(
+                                                    text = user.fullName,
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Text(
+                                                    text = user.email,
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    color = Color.Gray
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showInviteDialog = false }) {
+                        Text("Cancelar", fontWeight = FontWeight.Bold, color = Color.Gray)
+                    }
+                }
+            )
+        }
+
         if (state.isLoading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Color(0xFF2563EB))
@@ -313,6 +434,26 @@ fun ProjectDetailScreen(
                 Text(state.error!!, color = MaterialTheme.colorScheme.error)
             }
         } else {
+
+            val filteredSections = remember(state.sections, searchQuery) {
+                if (searchQuery.isBlank()) {
+                    state.sections
+                } else {
+                    state.sections.mapNotNull { section ->
+                        val filteredTasks = section.task.filter { task ->
+                            task.title.contains(searchQuery, ignoreCase = true) ||
+                                    (task.description?.contains(searchQuery, ignoreCase = true) == true)
+                        }
+
+                        if (filteredTasks.isNotEmpty()) {
+                            section.copy(task = filteredTasks)
+                        } else {
+                            null
+                        }
+                    }
+                }
+            }
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -320,7 +461,6 @@ fun ProjectDetailScreen(
                 contentPadding = PaddingValues(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                //TODO añadir utilidad barra de busqueda
                 item {
                     OutlinedTextField(
                         value = searchQuery,
@@ -337,7 +477,15 @@ fun ProjectDetailScreen(
                     )
                 }
 
-                state.sections.forEach {
+                if (filteredSections.isEmpty() && searchQuery.isNotEmpty()) {
+                    item {
+                        Box(Modifier.fillMaxWidth().padding(top = 40.dp), contentAlignment = Alignment.Center) {
+                            Text("No se encontraron tareas", color = Color.Gray)
+                        }
+                    }
+                }
+
+                filteredSections.forEach {
                     item(key = "header_${it.id}") {
                         Row(
                             modifier = Modifier
@@ -348,7 +496,6 @@ fun ProjectDetailScreen(
                         ) {
                             Text(
                                 text = it.name,
-                                //modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )

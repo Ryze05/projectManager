@@ -6,6 +6,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ProjectMember(
     @SerialName("profile_id") val profileId: String,
-    @SerialName("project_id") val projectId: Int,
+    @SerialName("project_id") val projectId: Long,
     val role: String = "staff"
 )

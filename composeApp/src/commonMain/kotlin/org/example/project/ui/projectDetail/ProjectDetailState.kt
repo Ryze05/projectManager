@@ -8,5 +8,7 @@ data class ProjectDetailsState(
     val sections: List<Section> = emptyList(),
     val projectMembers: List<Profile> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val allUsers: List<Profile> = emptyList(),
+    val currentUserId: String = ""
 )
