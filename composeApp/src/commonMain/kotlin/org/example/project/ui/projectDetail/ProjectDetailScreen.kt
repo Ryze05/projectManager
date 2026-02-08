@@ -148,31 +148,35 @@ fun ProjectDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { showInviteDialog = true }) {
-                        Icon(
-                            imageVector = Icons.Default.GroupAdd,
-                            contentDescription = "Invitar miembro",
-                            tint = Color(0xFF2563EB)
-                        )
+                    if (state.isAdmin) {
+                        IconButton(onClick = { showInviteDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Default.GroupAdd,
+                                contentDescription = "Invitar miembro",
+                                tint = Color(0xFF2563EB)
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF5F6FA))
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showAddSectionDialog = true },
-                containerColor = Color(0xFF2563EB),
-                contentColor = Color.White,
-                shape = CircleShape
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Crear")
+            if (state.isAdmin) {
+                FloatingActionButton(
+                    onClick = { showAddSectionDialog = true },
+                    containerColor = Color(0xFF2563EB),
+                    contentColor = Color.White,
+                    shape = CircleShape
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Crear")
+                }
             }
         },
         containerColor = Color(0xFFF5F6FA)
     ) { padding ->
 
-        if (showAddSectionDialog) {
+        if (showAddSectionDialog && state.isAdmin) {
             AlertDialog(
                 onDismissRequest = { showAddSectionDialog = false },
                 title = { Text("Nueva Sección", fontWeight = FontWeight.Bold) },
@@ -230,7 +234,7 @@ fun ProjectDetailScreen(
             )
         }
 
-        if (showAddTaskDialog) {
+        if (showAddTaskDialog && state.isAdmin) {
             AlertDialog(
                 onDismissRequest = { showAddTaskDialog = false },
                 title = { Text("Nueva Tarea", fontWeight = FontWeight.Bold) },
@@ -326,12 +330,12 @@ fun ProjectDetailScreen(
             )
         }
 
-        if (showInviteDialog) {
+        if (showInviteDialog && state.isAdmin) {
             LaunchedEffect(Unit) { viewModel.loadAvailableUsers() }
 
             AlertDialog(
                 onDismissRequest = { showInviteDialog = false },
-                shape = RoundedCornerShape(28.dp), // Esquinas mucho más redondeadas (estilo moderno)
+                shape = RoundedCornerShape(28.dp),
                 containerColor = Color.White,
                 title = {
                     Text(
@@ -344,7 +348,7 @@ fun ProjectDetailScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 400.dp) // Un poco más de aire para la lista
+                            .heightIn(max = 400.dp)
                     ) {
                         Text(
                             text = "Selecciona un usuario para añadirlo al proyecto.",
@@ -362,7 +366,7 @@ fun ProjectDetailScreen(
                             }
                         } else {
                             LazyColumn(
-                                verticalArrangement = Arrangement.spacedBy(8.dp) // Espacio entre items en lugar de líneas divisorias
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 items(state.allUsers) { user ->
                                     Surface(
@@ -371,7 +375,7 @@ fun ProjectDetailScreen(
                                             showInviteDialog = false
                                         },
                                         shape = RoundedCornerShape(16.dp),
-                                        color = Color(0xFFF8FAFC), // Un fondo gris casi imperceptible para dar profundidad
+                                        color = Color(0xFFF8FAFC),
                                         border = BorderStroke(1.dp, Color(0xFFF1F5F9))
                                     ) {
                                         Row(
@@ -380,18 +384,17 @@ fun ProjectDetailScreen(
                                                 .padding(12.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            // Avatar mejorado
                                             Surface(
                                                 modifier = Modifier.size(40.dp),
                                                 shape = CircleShape,
-                                                color = Color(0xFFDBEAFE) // Azul muy claro
+                                                color = Color(0xFFDBEAFE)
                                             ) {
                                                 Box(contentAlignment = Alignment.Center) {
                                                     Text(
                                                         text = user.fullName.take(1).uppercase(),
                                                         style = MaterialTheme.typography.titleMedium,
                                                         fontWeight = FontWeight.Bold,
-                                                        color = Color(0xFF2563EB) // Texto azul fuerte
+                                                        color = Color(0xFF2563EB)
                                                     )
                                                 }
                                             }
@@ -500,11 +503,13 @@ fun ProjectDetailScreen(
                                 fontWeight = FontWeight.Bold
                             )
 
-                            IconButton(onClick = {
-                                selectedSectionId = it.id
-                                showAddTaskDialog = true
-                            }) {
-                                Icon(Icons.Default.Add, contentDescription = null, tint = Color(0xFF2563EB))
+                            if (state.isAdmin) {
+                                IconButton(onClick = {
+                                    selectedSectionId = it.id
+                                    showAddTaskDialog = true
+                                }) {
+                                    Icon(Icons.Default.Add, contentDescription = null, tint = Color(0xFF2563EB))
+                                }
                             }
                         }
                     }

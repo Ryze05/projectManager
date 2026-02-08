@@ -11,5 +11,5 @@ data class Profile(
     @SerialName("avatar_url") val avatarUrl: String? = null,
     @SerialName("is_admin") val isAdmin: Boolean = false,
     @SerialName("last_sign_in") val lastSignIn: String? = null,
-    @SerialName("created_at") val createdAt: String? = null
+    @SerialName("created_at") val createdAt: String? = null,
 )

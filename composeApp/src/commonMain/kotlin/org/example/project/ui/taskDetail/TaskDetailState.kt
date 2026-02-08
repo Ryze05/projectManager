@@ -4,5 +4,6 @@ data class TaskDetailState(
     val task: org.example.project.domain.models.Task? = null,
     val projectMembers: List<org.example.project.domain.models.Profile> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val isAdmin: Boolean = false
 )

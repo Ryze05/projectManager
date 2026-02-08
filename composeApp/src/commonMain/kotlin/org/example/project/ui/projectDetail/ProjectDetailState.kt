@@ -10,5 +10,6 @@ data class ProjectDetailsState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val allUsers: List<Profile> = emptyList(),
-    val currentUserId: String = ""
+    val currentUserId: String = "",
+    val isAdmin: Boolean = false
 )

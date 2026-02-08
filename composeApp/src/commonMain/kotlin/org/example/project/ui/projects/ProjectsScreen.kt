@@ -50,19 +50,21 @@ fun ProjectsScreen(
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showDialog = true },
-                containerColor = Color(0xFF2563EB),
-                contentColor = Color.White,
-                shape = CircleShape
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Crear")
+            if (state.isAdmin) {
+                FloatingActionButton(
+                    onClick = { showDialog = true },
+                    containerColor = Color(0xFF2563EB),
+                    contentColor = Color.White,
+                    shape = CircleShape
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Crear")
+                }
             }
         },
         containerColor = Color(0xFFF5F6FA)
     ) { padding ->
 
-        if (showDialog) {
+        if (showDialog && state.isAdmin) {
             AlertDialog(
                 onDismissRequest = { showDialog = false },
                 title = { Text("Nuevo Proyecto", fontWeight = FontWeight.Bold) },

@@ -42,27 +42,18 @@ class ProjectRepository {
         SupabaseClient.client.postgrest["project"].insert(newProject)
     }
 
-    /*suspend fun getProjectSectionsWithTasks(projectId: Long): List<Section> {
+    suspend fun getProjectSectionsWithTasks(projectId: Long, userId: String, isAdmin: Boolean): List<Section> {
         return try {
-            SupabaseClient.client.from("section")
-                .select(columns = Columns.raw("*, task(*)")) {
-                    filter {
-                        eq("project_id", projectId)
-                    }
-                }
-                .decodeList<Section>()
-        } catch (e: Exception) {
-            println("Error cargando secciones: ${e.message}")
-            emptyList()
-        }
-    }*/
-
-    suspend fun getProjectSectionsWithTasks(projectId: Long, userId: String): List<Section> {
-        return try {
-            SupabaseClient.client.from("section")
-                .select(
-                    columns = Columns.raw(
-                        """
+            val query = if (isAdmin) {
+                """
+                *, 
+                task(
+                    *, 
+                    profiles:profile(*)
+                )
+            """.trimIndent()
+            } else {
+                """
                 *, 
                 task!inner(
                     *, 
@@ -70,16 +61,19 @@ class ProjectRepository {
                     profiles:profile(*)
                 )
             """.trimIndent()
-                    )
-                ) {
+            }
+
+            SupabaseClient.client.from("section")
+                .select(columns = Columns.raw(query)) {
                     filter {
                         eq("project_id", projectId)
-                        eq("task.task_assignment.profile_id", userId)
+                        if (!isAdmin) {
+                            eq("task.task_assignment.profile_id", userId)
+                        }
                     }
                 }
                 .decodeList<Section>()
         } catch (e: Exception) {
-            println("Error o no hay tareas para el usuario: ${e.message}")
             emptyList()
         }
     }
@@ -94,5 +88,22 @@ class ProjectRepository {
 
     suspend fun addMemberToProject(member: ProjectMember) {
         SupabaseClient.client.from("project_member").insert(member)
+    }
+
+    suspend fun updateProject(projectId: Long, newTitle: String, newStatus: String) {
+        SupabaseClient.client.from("project").update(
+            {
+                set("title", newTitle)
+                set("status", newStatus)
+            }
+        ) {
+            filter { eq("id", projectId) }
+        }
+    }
+
+    suspend fun deleteProject(projectId: Long) {
+        SupabaseClient.client.from("project").delete {
+            filter { eq("id", projectId) }
+        }
     }
 }

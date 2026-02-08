@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.domain.models.ProjectMember
+import org.example.project.repository.AuthRepository
 import org.example.project.repository.ProjectRepository
 import org.example.project.repository.SectionRepository
 import org.example.project.repository.TaskRepository
@@ -14,7 +15,8 @@ import org.example.project.repository.TaskRepository
 class ProjectDetailsViewModel(
     private val projectRepository: ProjectRepository,
     private val sectionRepository: SectionRepository,
-    private val taskRepository: TaskRepository
+    private val taskRepository: TaskRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(ProjectDetailsState())
     val state = _state.asStateFlow()
@@ -24,9 +26,18 @@ class ProjectDetailsViewModel(
 
         viewModelScope.launch {
             try {
-                val sectionsWithTasks = projectRepository.getProjectSectionsWithTasks(projectId, userId)
+                val profile = authRepository.getCurrentUserProfile()
+                val isAdmin = profile?.isAdmin ?: false
+
+                val sectionsWithTasks = projectRepository.getProjectSectionsWithTasks(projectId, userId, isAdmin)
                 val members = projectRepository.getProjectMembers(projectId)
-                _state.update { it.copy(sections = sectionsWithTasks, projectMembers = members, isLoading = false) }
+
+                _state.update { it.copy(
+                    sections = sectionsWithTasks,
+                    projectMembers = members,
+                    isAdmin = profile?.isAdmin ?: false,
+                    isLoading = false
+                ) }
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = "Error: ${e.message}") }
             }
@@ -34,6 +45,7 @@ class ProjectDetailsViewModel(
     }
 
     fun addSection(name: String, projectId: Long, priority: String) {
+        if (!_state.value.isAdmin) return
         viewModelScope.launch {
             try {
                 sectionRepository.createSection(name, projectId, priority)
@@ -45,6 +57,7 @@ class ProjectDetailsViewModel(
     }
 
     fun addTask(title: String, sectionId: Long, projectId: Long, priority: String, description: String?, dueDate: String?) {
+        if (!_state.value.isAdmin) return
         viewModelScope.launch {
             try {
                 taskRepository.createTask(title, description, sectionId, priority, dueDate)
@@ -56,6 +69,7 @@ class ProjectDetailsViewModel(
     }
 
     fun addMember(profileId: String, projectId: Long) {
+        if (!_state.value.isAdmin) return
         viewModelScope.launch {
             try {
                 val newMember = ProjectMember(profileId = profileId, projectId = projectId)

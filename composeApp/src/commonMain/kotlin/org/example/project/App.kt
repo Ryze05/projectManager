@@ -43,15 +43,15 @@ fun App() {
 
         // PROJECTS
         val projectRepository = remember { ProjectRepository() }
-        val viewModelProject = remember { ProjectViewModel(projectRepository) }
+        val viewModelProject = remember { ProjectViewModel(projectRepository, authRepository) }
 
         // PROJECT DETAIL
         val sectionRepository = remember { SectionRepository() }
         val taskRepository = remember { TaskRepository() }
-        val viewModelProjectDetail = remember { ProjectDetailsViewModel(projectRepository, sectionRepository, taskRepository) }
+        val viewModelProjectDetail = remember { ProjectDetailsViewModel(projectRepository, sectionRepository, taskRepository, authRepository) }
 
         // TASK DETAIL
-        val viewModelTaskDetail = remember { TaskDetailViewModel(taskRepository, projectRepository) }
+        val viewModelTaskDetail = remember { TaskDetailViewModel(taskRepository, projectRepository, authRepository) }
 
 
         // --- 1. LÓGICA DE SESIÓN PERSISTENTE ---

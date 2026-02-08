@@ -3,9 +3,11 @@ package org.example.project.repository
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.user.UserSession
+import io.github.jan.supabase.postgrest.from
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import org.example.project.domain.models.Profile
 import org.example.project.network.SupabaseClient
 
 class AuthRepository() {
@@ -34,6 +36,19 @@ class AuthRepository() {
     suspend fun signOut() {
         runCatching {
             SupabaseClient.client.auth.signOut()
+        }
+    }
+
+    suspend fun getCurrentUserProfile(): Profile? {
+        return try {
+            val id = getCurrentUserId() ?: return null
+            SupabaseClient.client.from("profile")
+                .select {
+                    filter { eq("id", id) }
+                }
+                .decodeSingleOrNull<Profile>()
+        } catch (e: Exception) {
+            null
         }
     }
 

@@ -5,12 +5,14 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.example.project.repository.AuthRepository
 import org.example.project.repository.ProjectRepository
 import org.example.project.repository.TaskRepository
 
 class TaskDetailViewModel(
     private val taskRepository: TaskRepository,
-    private val projectRepository: ProjectRepository
+    private val projectRepository: ProjectRepository,
+    private val authRepository: AuthRepository
 ): ViewModel() {
     private val _state = kotlinx.coroutines.flow.MutableStateFlow(TaskDetailState())
     val state = _state.asStateFlow()
@@ -19,10 +21,11 @@ class TaskDetailViewModel(
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
+                val profile = authRepository.getCurrentUserProfile()
                 val task = taskRepository.getTaskById(taskId)
                 val members = projectRepository.getProjectMembers(projectId)
 
-                _state.update { it.copy(task = task, projectMembers = members, isLoading = false) }
+                _state.update { it.copy(task = task, projectMembers = members, isLoading = false, isAdmin = profile?.isAdmin ?: false) }
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = e.message) }
             }
@@ -30,6 +33,7 @@ class TaskDetailViewModel(
     }
 
     fun assignMember(profileId: String, projectId: Long) {
+        if (!_state.value.isAdmin) return
         val currentTaskId = _state.value.task?.id ?: return
         viewModelScope.launch {
             try {

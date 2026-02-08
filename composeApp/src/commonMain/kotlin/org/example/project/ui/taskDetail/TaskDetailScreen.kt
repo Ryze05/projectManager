@@ -81,12 +81,14 @@ fun TaskDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { showMemberSelector = true }) {
-                        Icon(
-                            imageVector = Icons.Default.GroupAdd,
-                            contentDescription = "Invitar miembro",
-                            tint = Color(0xFF2563EB)
-                        )
+                    if (state.isAdmin) {
+                        IconButton(onClick = { showMemberSelector = true }) {
+                            Icon(
+                                imageVector = Icons.Default.GroupAdd,
+                                contentDescription = "Asignar miembro",
+                                tint = Color(0xFF2563EB)
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF5F6FA))
@@ -179,23 +181,6 @@ fun TaskDetailScreen(
                             Text("Miembros asignados", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(12.dp))
 
-                            /*Button(
-                                onClick = { showMemberSelector = true },
-                                modifier = Modifier.fillMaxWidth().height(52.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.Transparent,
-                                    contentColor = Color(0xFF2563EB)
-                                ),
-                                border = BorderStroke(1.dp, Color(0xFF2563EB))
-                            ) {
-                                Icon(Icons.Default.AddCircle, null)
-                                Spacer(Modifier.width(8.dp))
-                                Text("Añadir Miembro", fontWeight = FontWeight.Bold)
-                            }
-
-                            Spacer(Modifier.height(12.dp))*/
-
                             Card(
                                 colors = CardDefaults.cardColors(containerColor = Color.White),
                                 border = BorderStroke(1.dp, Color(0xFFF1F5F9)),
@@ -219,7 +204,7 @@ fun TaskDetailScreen(
                         }
                     }
                 }
-                if (showMemberSelector) {
+                if (showMemberSelector && state.isAdmin) {
                     AlertDialog(
                         onDismissRequest = { showMemberSelector = false },
                         shape = RoundedCornerShape(28.dp),

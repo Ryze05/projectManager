@@ -5,5 +5,6 @@ import org.example.project.domain.models.Project
 data class ProjectState (
     val isLoading: Boolean = false,
     val projects: List<Project> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    val isAdmin: Boolean = false
 )
