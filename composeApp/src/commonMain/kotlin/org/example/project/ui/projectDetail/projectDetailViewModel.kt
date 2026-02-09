@@ -56,6 +56,30 @@ class ProjectDetailsViewModel(
         }
     }
 
+    fun updateSection(sectionId: Long, name: String, priority: String, projectId: Long) {
+        if (!_state.value.isAdmin) return
+        viewModelScope.launch {
+            try {
+                sectionRepository.updateSection(sectionId, name, priority)
+                loadProjectContent(projectId, _state.value.projectName, _state.value.currentUserId)
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message) }
+            }
+        }
+    }
+
+    fun deleteSection(sectionId: Long, projectId: Long) {
+        if (!_state.value.isAdmin) return
+        viewModelScope.launch {
+            try {
+                sectionRepository.deleteSection(sectionId)
+                loadProjectContent(projectId, _state.value.projectName, _state.value.currentUserId)
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message) }
+            }
+        }
+    }
+
     fun addTask(title: String, sectionId: Long, projectId: Long, priority: String, description: String?, dueDate: String?) {
         if (!_state.value.isAdmin) return
         viewModelScope.launch {
@@ -64,6 +88,30 @@ class ProjectDetailsViewModel(
                 loadProjectContent(projectId, _state.value.projectName, _state.value.currentUserId)
             } catch (e: Exception) {
                 _state.update { it.copy(error = "Error al crear la tarea") }
+            }
+        }
+    }
+
+    fun updateTask(taskId: Long, title: String, description: String?, priority: String, dueDate: String?, projectId: Long) {
+        if (!_state.value.isAdmin) return
+        viewModelScope.launch {
+            try {
+                taskRepository.updateTask(taskId, title, description, priority, dueDate)
+                loadProjectContent(projectId, _state.value.projectName, _state.value.currentUserId)
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message) }
+            }
+        }
+    }
+
+    fun deleteTask(taskId: Long, projectId: Long) {
+        if (!_state.value.isAdmin) return
+        viewModelScope.launch {
+            try {
+                taskRepository.deleteTask(taskId)
+                loadProjectContent(projectId, _state.value.projectName, _state.value.currentUserId)
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message) }
             }
         }
     }

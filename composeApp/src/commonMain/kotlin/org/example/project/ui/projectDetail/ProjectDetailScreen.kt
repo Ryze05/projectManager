@@ -25,13 +25,17 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.GroupAdd
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -203,7 +207,7 @@ fun ProjectDetailScreen(
                                         onClick = { selectedPriority = priority },
                                         label = { Text(priority.replaceFirstChar { it.uppercase() }) },
                                         colors = FilterChipDefaults.filterChipColors(
-                                            selectedContainerColor = when(priority) {
+                                            selectedContainerColor = when (priority) {
                                                 "alta" -> Color(0xFFFEE2E2)
                                                 "media" -> Color(0xFFFEF3C7)
                                                 else -> Color(0xFFDCFCE7)
@@ -261,7 +265,8 @@ fun ProjectDetailScreen(
                             Spacer(Modifier.width(8.dp))
                             Text(datePickerState.selectedDateMillis?.let {
                                 val date = Instant.fromEpochMilliseconds(it).toLocalDateTime(
-                                    TimeZone.currentSystemDefault())
+                                    TimeZone.currentSystemDefault()
+                                )
                                 "${date.dayOfMonth}/${date.monthNumber}/${date.year}"
                             } ?: "Fecha de entrega")
                         }
@@ -445,7 +450,10 @@ fun ProjectDetailScreen(
                     state.sections.mapNotNull { section ->
                         val filteredTasks = section.task.filter { task ->
                             task.title.contains(searchQuery, ignoreCase = true) ||
-                                    (task.description?.contains(searchQuery, ignoreCase = true) == true)
+                                    (task.description?.contains(
+                                        searchQuery,
+                                        ignoreCase = true
+                                    ) == true)
                         }
 
                         if (filteredTasks.isNotEmpty()) {
@@ -482,117 +490,296 @@ fun ProjectDetailScreen(
 
                 if (filteredSections.isEmpty() && searchQuery.isNotEmpty()) {
                     item {
-                        Box(Modifier.fillMaxWidth().padding(top = 40.dp), contentAlignment = Alignment.Center) {
+                        Box(
+                            Modifier.fillMaxWidth().padding(top = 40.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Text("No se encontraron tareas", color = Color.Gray)
                         }
                     }
                 }
 
                 filteredSections.forEach {
+
                     item(key = "header_${it.id}") {
+
+                        var showSectionOptions by remember { mutableStateOf(false) }
+                        var showEditSectionDialog by remember { mutableStateOf(false) }
+
+                        var editName by remember { mutableStateOf(it.name) }
+                        var editPriority by remember { mutableStateOf(it.priority) }
+
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 8.dp, bottom = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                                .padding(top = 12.dp, bottom = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = it.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
+                            if (state.isAdmin) {
+                                IconButton(
+                                    onClick = {
+                                        selectedSectionId = it.id
+                                        showAddTaskDialog = true
+                                    },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Añadir tarea",
+                                        tint = Color(0xFF2563EB)
+                                    )
+                                }
+                                Spacer(Modifier.width(8.dp))
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = it.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1E293B)
+                                )
+
+                                Spacer(Modifier.width(12.dp))
+
+                                Surface(
+                                    color = when (it.priority.lowercase()) {
+                                        "alta" -> Color(0xFFFEE2E2)
+                                        "media" -> Color(0xFFFEF3C7)
+                                        else -> Color(0xFFDCFCE7)
+                                    },
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text(
+                                        text = it.priority.replaceFirstChar { it.uppercase() },
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = when (it.priority.lowercase()) {
+                                            "alta" -> Color(0xFFB91C1C)
+                                            "media" -> Color(0xFFB45309)
+                                            else -> Color(0xFF15803D)
+                                        }
+                                    )
+                                }
+                            }
 
                             if (state.isAdmin) {
-                                IconButton(onClick = {
-                                    selectedSectionId = it.id
-                                    showAddTaskDialog = true
-                                }) {
-                                    Icon(Icons.Default.Add, contentDescription = null, tint = Color(0xFF2563EB))
+                                Box {
+                                    IconButton(
+                                        onClick = { showSectionOptions = true },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreVert,
+                                            contentDescription = "Opciones",
+                                            tint = Color.LightGray,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+
+                                    DropdownMenu(
+                                        expanded = showSectionOptions,
+                                        onDismissRequest = { showSectionOptions = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text("Editar sección") },
+                                            onClick = {
+                                                showSectionOptions = false
+                                                showEditSectionDialog = true
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text("Eliminar sección", color = Color.Red) },
+                                            onClick = {
+                                                showSectionOptions = false
+                                                it.id?.let { id ->
+                                                    viewModel.deleteSection(id, projectId)
+                                                }
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
+
+                        if (showEditSectionDialog) {
+                            AlertDialog(
+                                onDismissRequest = { showEditSectionDialog = false },
+                                title = { Text("Editar Sección", fontWeight = FontWeight.Bold) },
+                                text = {
+                                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                        OutlinedTextField(
+                                            value = editName,
+                                            onValueChange = { editName = it },
+                                            label = { Text("Nombre de la sección") },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            shape = RoundedCornerShape(12.dp)
+                                        )
+                                        Column {
+                                            Text("Prioridad", style = MaterialTheme.typography.labelMedium)
+                                            Spacer(Modifier.height(8.dp))
+                                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                priorities.forEach { priority ->
+                                                    FilterChip(
+                                                        selected = editPriority == priority,
+                                                        onClick = { editPriority = priority },
+                                                        label = { Text(priority.replaceFirstChar { it.uppercase() }) },
+                                                        colors = FilterChipDefaults.filterChipColors(
+                                                            selectedContainerColor = when (priority) {
+                                                                "alta" -> Color(0xFFFEE2E2)
+                                                                "media" -> Color(0xFFFEF3C7)
+                                                                else -> Color(0xFFDCFCE7)
+                                                            }
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                confirmButton = {
+                                    Button(
+                                        onClick = {
+                                            it.id?.let { id ->
+                                                viewModel.updateSection(id, editName, editPriority, projectId)
+                                            }
+                                            showEditSectionDialog = false
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB))
+                                    ) { Text("Guardar") }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showEditSectionDialog = false }) {
+                                        Text("Cancelar", color = Color.Gray)
+                                    }
+                                }
+                            )
+                        }
                     }
 
-                    items(it.task) {
+                    items(it.task) { task ->
+                        var showTaskOptions by remember { mutableStateOf(false) }
+                        var showEditTaskDialog by remember { mutableStateOf(false) }
+
+                        var editTaskTitle by remember { mutableStateOf(task.title) }
+                        var editTaskDescription by remember { mutableStateOf(task.description ?: "") }
+                        var editTaskPriority by remember { mutableStateOf(task.priority) }
+
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp)
-                                .clickable{
-                                    onTaskClick(it.id!!)
-                                },
+                                .clickable { onTaskClick(task.id!!) },
                             colors = CardDefaults.cardColors(containerColor = Color.White),
                             shape = RoundedCornerShape(16.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Row(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .fillMaxWidth(),
+                                modifier = Modifier.padding(16.dp).fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .background(Color(0xFFFDE68A), RoundedCornerShape(12.dp)),
+                                    modifier = Modifier.size(48.dp).background(Color(0xFFFDE68A), RoundedCornerShape(12.dp)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Assignment,
-                                        contentDescription = null,
-                                        tint = Color(0xFFB45309),
-                                        modifier = Modifier.size(24.dp)
-                                    )
+                                    Icon(Icons.Default.Assignment, null, tint = Color(0xFFB45309), modifier = Modifier.size(24.dp))
                                 }
 
                                 Spacer(Modifier.width(16.dp))
 
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = it.title,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                    Text(text = task.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                                    Text(text = "Prioridad: ${task.priority.capitalize()}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                                }
 
-                                    val displayDate = remember(it.dueDate) {
-                                        if (it.dueDate.isNullOrBlank()) "Sin fecha"
-                                        else {
-                                            try {
-                                                val ins = Instant.parse(it.dueDate!!)
-                                                val local = ins.toLocalDateTime(TimeZone.currentSystemDefault())
-                                                "${local.dayOfMonth.toString().padStart(2, '0')}/" +
-                                                        "${local.monthNumber.toString().padStart(2, '0')}/" +
-                                                        "${local.year} - " +
-                                                        "${local.hour.toString().padStart(2, '0')}:" +
-                                                        local.minute.toString().padStart(2, '0')
-                                            } catch (e: Exception) {
-                                                it.dueDate!!
+                                if (state.isAdmin) {
+                                    Box {
+                                        IconButton(onClick = { showTaskOptions = true }) {
+                                            Icon(Icons.Default.MoreVert, null, tint = Color.LightGray)
+                                        }
+                                        DropdownMenu(
+                                            expanded = showTaskOptions,
+                                            onDismissRequest = { showTaskOptions = false }
+                                        ) {
+                                            DropdownMenuItem(
+                                                text = { Text("Editar tarea") },
+                                                onClick = {
+                                                    showTaskOptions = false
+                                                    showEditTaskDialog = true
+                                                }
+                                            )
+                                            DropdownMenuItem(
+                                                text = { Text("Eliminar tarea", color = Color.Red) },
+                                                onClick = {
+                                                    showTaskOptions = false
+                                                    viewModel.deleteTask(task.id!!, projectId)
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (showEditTaskDialog) {
+                            AlertDialog(
+                                onDismissRequest = { showEditTaskDialog = false },
+                                title = { Text("Editar Tarea", fontWeight = FontWeight.Bold) },
+                                text = {
+                                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        OutlinedTextField(
+                                            value = editTaskTitle,
+                                            onValueChange = { editTaskTitle = it },
+                                            label = { Text("Título") },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            shape = RoundedCornerShape(12.dp)
+                                        )
+                                        OutlinedTextField(
+                                            value = editTaskDescription,
+                                            onValueChange = { editTaskDescription = it },
+                                            label = { Text("Descripción") },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            shape = RoundedCornerShape(12.dp)
+                                        )
+
+                                        Text("Prioridad", style = MaterialTheme.typography.labelMedium)
+                                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            priorities.forEach { priority ->
+                                                FilterChip(
+                                                    selected = editTaskPriority == priority,
+                                                    onClick = { editTaskPriority = priority },
+                                                    label = { Text(priority.capitalize()) }
+                                                )
                                             }
                                         }
                                     }
-
-                                    Text(
-                                        text = displayDate,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color.Gray,
-                                        fontWeight = FontWeight.Medium
-                                    )
+                                },
+                                confirmButton = {
+                                    Button(
+                                        onClick = {
+                                            if (editTaskTitle.isNotBlank()) {
+                                                viewModel.updateTask(
+                                                    taskId = task.id!!,
+                                                    title = editTaskTitle,
+                                                    description = editTaskDescription,
+                                                    priority = editTaskPriority,
+                                                    dueDate = task.dueDate,
+                                                    projectId = projectId
+                                                )
+                                                showEditTaskDialog = false
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB))
+                                    ) { Text("Guardar") }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showEditTaskDialog = false }) { Text("Cancelar") }
                                 }
-
-                                Surface(
-                                    color = Color(0xFFF1F5F9),
-                                    shape = RoundedCornerShape(4.dp)
-                                ) {
-                                    Text(
-                                        text = it.priority,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = Color.Gray,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
+                            )
                         }
                     }
                 }

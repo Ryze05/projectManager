@@ -46,12 +46,22 @@ class TaskRepository {
         }
     }
 
-    suspend fun unassignUserFromTask(taskId: Long, profileId: String) {
-        SupabaseClient.client.from("task_assignment").delete {
-            filter {
-                eq("task_id", taskId)
-                eq("profile_id", profileId)
+    suspend fun updateTask(taskId: Long, title: String, description: String?, priority: String, dueDate: String?) {
+        SupabaseClient.client.from("task").update(
+            {
+                set("title", title)
+                set("description", description)
+                set("priority", priority)
+                set("due_date", dueDate)
             }
+        ) {
+            filter { eq("id", taskId) }
+        }
+    }
+
+    suspend fun deleteTask(taskId: Long) {
+        SupabaseClient.client.from("task").delete {
+            filter { eq("id", taskId) }
         }
     }
 }

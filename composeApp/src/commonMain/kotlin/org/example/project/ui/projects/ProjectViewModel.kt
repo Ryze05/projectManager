@@ -43,4 +43,31 @@ class ProjectViewModel(
             }
         }
     }
+
+    fun updateProject(projectId: Long, newTitle: String, newStatus: String, ownerId: String, oldStatus: String) {
+        if (!_state.value.isAdmin) return
+        viewModelScope.launch {
+            try {
+                projectRepository.updateProject(projectId, newTitle, newStatus)
+
+                loadProjectsByUserAndStatus(ownerId, oldStatus)
+
+                _state.update { it.copy(error = null) }
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message) }
+            }
+        }
+    }
+
+    fun deleteProject(projectId: Long, ownerId: String, currentStatus: String) {
+        if (!_state.value.isAdmin) return
+        viewModelScope.launch {
+            try {
+                projectRepository.deleteProject(projectId)
+                loadProjectsByUserAndStatus(ownerId, currentStatus)
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message) }
+            }
+        }
+    }
 }
