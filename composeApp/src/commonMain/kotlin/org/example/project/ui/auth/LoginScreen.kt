@@ -47,6 +47,7 @@ import org.jetbrains.compose.resources.painterResource
 import projectmanager.composeapp.generated.resources.Res
 import projectmanager.composeapp.generated.resources.logo
 
+
 @Composable
 fun LoginScreen(
     viewModel: AuthViewModel,

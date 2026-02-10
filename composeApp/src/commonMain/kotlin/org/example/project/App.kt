@@ -8,10 +8,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import org.example.project.repository.AuthRepository
 import org.example.project.ui.auth.AuthViewModel
 import org.example.project.ui.auth.LoginScreen
@@ -21,6 +25,9 @@ import org.example.project.ui.projects.ProjectsScreen
 import org.example.project.ui.profile.ProfileScreen
 import org.example.project.ui.navigation.Screen
 import org.example.project.ui.theme.ProjectManagerTheme
+import org.example.project.ui.Tasks.TasksScreen
+import org.example.project.ui.Tasks.TasksViewModel
+import org.example.project.ui.home.HomeViewModel
 
 @Composable
 fun App() {
@@ -48,7 +55,7 @@ fun App() {
         val bottomBarScreens = listOf(
             Screen.Home,
             Screen.Projects,
-            Screen.Tasks,
+            Screen.Agenda, // <--- CAMBIO AQUÍ: Usamos la ruta fija
             Screen.Profile
         )
 
@@ -74,8 +81,10 @@ fun App() {
                                     label = { Text(screen.title) },
                                     selected = currentRoute == screen.route,
                                     onClick = {
-                                        navController.navigate(screen.route) {
-                                            popUpTo(Screen.Home.route) { saveState = true }
+                                        navController.navigate(screen.route) { // Navegamos directo a la ruta
+                                            popUpTo(Screen.Home.route) {
+                                                saveState = true
+                                            }
                                             launchSingleTop = true
                                             restoreState = true
                                         }
@@ -92,6 +101,7 @@ fun App() {
                     startDestination = startDestination,
                     modifier = Modifier.padding(innerPadding) // Evita que el contenido quede bajo la barra
                 ) {
+
                     // --- FLUJO DE AUTENTICACIÓN ---
                     composable(Screen.Login.route) {
                         LoginScreen(
@@ -104,6 +114,11 @@ fun App() {
                             }
                         )
                     }
+                    composable(Screen.Agenda.route) {
+                        // Truco: ID 0 significa "Cargar todo" en tu ViewModel
+                        val viewModel = remember { TasksViewModel(0L) }
+                        TasksScreen(viewModel = viewModel)
+                    }
 
                     composable(Screen.Register.route) {
                         RegisterScreen(
@@ -114,20 +129,24 @@ fun App() {
 
                     // --- FLUJO DE LA APLICACIÓN ---
                     composable(Screen.Home.route) {
-                        HomeScreen()
+                        HomeScreen(
+                            viewModel = viewModel(), // <--- ¡AQUÍ ESTÁ EL CAMBIO!
+                            navController = navController
+                        )
                     }
 
                     composable(Screen.Projects.route) {
                         ProjectsScreen()
                     }
 
-                    composable(Screen.Tasks.route) {
-                        // Placeholder si aún no tienes esta pantalla creada
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("Agenda y Tareas")
-                        }
+                    composable(
+                        route = Screen.Tasks.route,
+                        arguments = listOf(navArgument("sectionId") { type = NavType.LongType })
+                    ) { backStackEntry ->
+                        val sectionId = backStackEntry.arguments?.getLong("sectionId") ?: 0L
+                        val viewModel = remember(sectionId) { TasksViewModel(sectionId) }
+                        TasksScreen(viewModel = viewModel)
                     }
-
                     composable(Screen.Profile.route) {
                         ProfileScreen(
                             onLogout = {

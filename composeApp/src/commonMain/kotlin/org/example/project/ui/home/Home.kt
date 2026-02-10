@@ -10,7 +10,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Folder
@@ -39,66 +42,200 @@ import org.example.project.repository.AuthRepository
 // NOTA: Asegúrate de importar tu R si usas imágenes locales,
 // o usa iconos temporales como he hecho yo abajo.
 
-@Composable
-fun HomeScreen() {
-    var userName by remember { mutableStateOf("Usuario") }
 
-    // EFECTO para cargar el nombre al iniciar la pantalla
-    LaunchedEffect(Unit) {
-        val repo = AuthRepository() // O usa tu viewModel si ya tienes uno
-        val name = repo.getCurrentUserName()
-        if (name != null) userName = name
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import org.example.project.domain.models.Project
+import org.example.project.domain.models.Section
+
+
+@Composable
+fun HomeScreen(
+    viewModel: HomeViewModel,
+    navController: NavController // Añadimos esto para poder navegar a las tareas
+) {
+    val state = viewModel.state.value
+
+    // 1. Estado para el diálogo de "Ver todos los proyectos" (Botón 'Ver todos')
+    var showAllProjectsDialog by remember { mutableStateOf(false) }
+
+    // 2. Estado para el diálogo de "Secciones" (Click en un proyecto)
+    var showSectionDialog by remember { mutableStateOf(false) }
+
+    // --- LÓGICA DE DIÁLOGOS ---
+
+    // Diálogo A: Ver lista completa de proyectos
+    if (showAllProjectsDialog) {
+        AllProjectsDialog(
+            projects = state.projects,
+            onDismiss = { showAllProjectsDialog = false }
+        )
     }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFF5F6FA))
-                .padding(horizontal = 20.dp)
-                .verticalScroll(rememberScrollState())
+    // Diálogo B: Ver secciones de un proyecto específico
+    if (showSectionDialog) {
+        ProjectSectionsDialog(
+            sections = state.selectedProjectSections,
+            isLoading = state.isDialogLoading,
+            onDismiss = { showSectionDialog = false },
+            onSectionClick = { sectionId ->
+                showSectionDialog = false
+                // NAVEGACIÓN A PANTALLA DE TAREAS
+                navController.navigate("tasks_screen/$sectionId")
+            }
+        )
+    }
+
+    // --- INTERFAZ PRINCIPAL ---
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF5F6FA))
+            .padding(horizontal = 20.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Saludo
+        HomeHeader(state.userName)
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        // --- ZONA REDISEÑADA (Contador Azul) ---
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF2563EB)),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
+            Column(modifier = Modifier.padding(20.dp)) {
+                Text("Proyectos en marcha", color = Color.White.copy(alpha = 0.8f))
+                Text(
+                    text = "${state.projects.size}",
+                    style = MaterialTheme.typography.displayMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text("Sigue así, el trabajo duro da frutos.", color = Color.White, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+        // ---------------------------------------
 
-            HomeHeader(userName)
+        Spacer(modifier = Modifier.height(30.dp))
 
-            Spacer(modifier = Modifier.height(24.dp))
+        // Cabecera de Sección
+        SectionHeader(
+            title = "Tus Proyectos",
+            actionText = "Ver todos",
+            onAction = { showAllProjectsDialog = true } // Abrimos diálogo A
+        )
 
+        Spacer(modifier = Modifier.height(12.dp))
 
-            Text(
-                text = "Resumen de progreso",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
+        // Lista de Proyectos (Vertical)
+        if (state.isLoading) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else if (state.projects.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .background(Color.White, RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("No hay proyectos aún 📂", color = Color.Gray)
+            }
+        } else {
+            ActiveProjectsColumn(
+                projects = state.projects,
+                onProjectClick = { projectId ->
+                    // 1. Cargamos las secciones de este proyecto
+                    viewModel.onProjectClicked(projectId)
+                    // 2. Abrimos el diálogo B
+                    showSectionDialog = true
+                }
             )
+        }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ProgressSummaryCard()
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // 4. Sección Proyectos Activos
-            SectionHeader(title = "Proyectos activos", actionText = "Ver todos")
-            Spacer(modifier = Modifier.height(12.dp))
-            ActiveProjectsRow()
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // 5. Sección Actividad Reciente
-            Text(
-                text = "Actividad reciente",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            RecentActivityList()
-
-            // Espacio extra al final para que no tape el BottomBar
-            Spacer(modifier = Modifier.height(80.dp))
-
+        Spacer(modifier = Modifier.height(80.dp))
     }
 }
+
+@Composable
+fun ActiveProjectsColumn(projects: List<Project>,onProjectClick: (Long) -> Unit) {
+    // Usamos Column en lugar de LazyRow porque el padre ya hace scroll
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        projects.forEach { project ->
+            // Generamos el color (el truco del ID que hicimos antes)
+            val colors = listOf(Color(0xFF2563EB), Color(0xFFFF8A65), Color(0xFF66BB6A), Color(0xFFAB47BC))
+            val selectedColor = colors[(project.id % colors.size).toInt()]
+
+            ProjectCardVertical(
+                title = project.title,
+                date = "Creado: ${project.createdAt.take(10)}",
+                color = selectedColor,
+                onClick = { onProjectClick(project.id.toLong()) }
+            )
+        }
+    }
+}
+@Composable
+fun ProjectCardVertical(title: String, date: String, color: Color,onClick: () -> Unit) {
+    Card(onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth() // AHORA OCUPA TODO EL ANCHO
+            .height(100.dp), // Un poco más bajita
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            // Franja de color a la izquierda
+            Box(
+                modifier = Modifier
+                    .width(16.dp) // Tira vertical de color
+                    .fillMaxHeight()
+                    .background(color)
+            )
+
+            // Contenido
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .weight(1f), // Ocupa el resto del espacio
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.DateRange, null, modifier = Modifier.size(14.dp), tint = Color.Gray)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = date, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                }
+            }
+
+            // Icono de flecha o similar a la derecha (opcional)
+            Icon(
+                imageVector = Icons.Default.ChevronRight, // Necesitas importar este icono
+                contentDescription = null,
+                tint = Color.Gray.copy(alpha = 0.5f),
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .padding(end = 16.dp)
+            )
+        }
+    }
+}
+
 
 // --- COMPONENTES UI ---
 
@@ -209,7 +346,7 @@ fun ProgressSummaryCard() {
 }
 
 @Composable
-fun SectionHeader(title: String, actionText: String) {
+fun SectionHeader(title: String, actionText: String, onAction: () -> Unit) { // Añadimos onAction
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -221,30 +358,117 @@ fun SectionHeader(title: String, actionText: String) {
             fontWeight = FontWeight.Bold,
             color = Color.Black
         )
-        TextButton(onClick = { /* TODO */ }) {
+        TextButton(onClick = onAction) { // Usamos la acción aquí
             Text(text = actionText, color = MaterialTheme.colorScheme.primary)
         }
     }
 }
-
 @Composable
-fun ActiveProjectsRow() {
-    // Datos Dummy
-    val projects = listOf(
-        ProjectUiModel("Rediseño Web", "Vence en 3 días", 0.7f, Color(0xFF2563EB), Color(0xFFEFF4FF)),
-        ProjectUiModel("App Móvil Fitness", "Vence en 1 sem", 0.4f, Color(0xFFFF8A65), Color(0xFFFFF1EE)),
-        ProjectUiModel("Dashboard Admin", "Vence en 2 días", 0.9f, Color(0xFF66BB6A), Color(0xFFE8F5E9))
+fun ProjectSectionsDialog(
+    sections: List<Section>, // Asegúrate de importar tu modelo Section
+    isLoading: Boolean,
+    onDismiss: () -> Unit,
+    onSectionClick: (Long) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Elige una sección") },
+        text = {
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else if (sections.isEmpty()) {
+                Text("Este proyecto aún no tiene secciones.")
+            } else {
+                // Lista vertical de secciones
+                androidx.compose.foundation.lazy.LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.heightIn(max = 300.dp)
+                ) {
+                    items(sections) { section ->
+                        Card(
+                            onClick = { onSectionClick(section.id) },
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(2.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = section.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                    contentDescription = null,
+                                    tint = Color.Gray,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        },
+        containerColor = Color(0xFFF5F6FA)
     )
-
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(end = 16.dp)
-    ) {
-        items(projects) { project ->
-            ProjectCard(project)
-        }
-    }
 }
+@Composable
+fun AllProjectsDialog(projects: List<Project>, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Todos tus proyectos") },
+        text = {
+            // Usamos LazyColumn para que se pueda hacer scroll si hay muchos
+            androidx.compose.foundation.lazy.LazyColumn(
+                modifier = Modifier.heightIn(max = 300.dp), // Altura máxima
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(projects) { project ->
+                    // Reutilizamos un diseño simple para la lista
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(2.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Círculo de color (truco visual)
+                            val colors = listOf(Color(0xFF2563EB), Color(0xFFFF8A65), Color(0xFF66BB6A))
+                            val color = colors[(project.id % colors.size).toInt()]
+
+                            Box(modifier = Modifier.size(12.dp).background(color, CircleShape))
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(project.title, style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cerrar")
+            }
+        },
+        containerColor = Color(0xFFF5F6FA)
+    )
+}
+
+
 
 @Composable
 fun ProjectCard(project: ProjectUiModel) {
