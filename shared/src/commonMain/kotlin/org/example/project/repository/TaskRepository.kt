@@ -60,7 +60,7 @@ class TaskRepository {
     suspend fun getAllTasksForAgenda(): List<Task> {
         return try {
             SupabaseClient.client
-                .from("agenda_view") // <--- LEEMOS LA VISTA
+                .from("task") // <--- LEEMOS LA VISTA
                 .select {
                     order("due_date", io.github.jan.supabase.postgrest.query.Order.ASCENDING)
                 }
