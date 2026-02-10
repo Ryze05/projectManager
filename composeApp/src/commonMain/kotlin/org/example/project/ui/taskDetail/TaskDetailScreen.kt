@@ -62,7 +62,8 @@ fun TaskDetailScreen(
     taskId: Long,
     projectId: Long,
     viewModel: TaskDetailViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    projectName: String
 ) {
 
     val state by viewModel.state.collectAsState()
@@ -125,16 +126,15 @@ fun TaskDetailScreen(
                                     color = Color(0xFFDBEAFE),
                                     shape = RoundedCornerShape(16.dp)
                                 ) {
-                                    //TODO AÑADIR EN LA BS
                                     Text(
-                                        text = "En progreso",
+                                        text = if (it.isCompleted) "Finalizada" else "En progreso",
                                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                         style = MaterialTheme.typography.labelMedium,
                                         color = Color(0xFF2563EB)
                                     )
                                 }
                                 Spacer(Modifier.width(8.dp))
-                                Text("• Proyecto Alpha", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+                                Text("• $projectName", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
                             }
                         }
                     }

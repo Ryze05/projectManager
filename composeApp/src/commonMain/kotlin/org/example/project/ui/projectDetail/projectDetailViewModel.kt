@@ -92,11 +92,11 @@ class ProjectDetailsViewModel(
         }
     }
 
-    fun updateTask(taskId: Long, title: String, description: String?, priority: String, dueDate: String?, projectId: Long) {
+    fun updateTask(taskId: Long, title: String, description: String?, priority: String, dueDate: String?, projectId: Long, isCompleted: Boolean) {
         if (!_state.value.isAdmin) return
         viewModelScope.launch {
             try {
-                taskRepository.updateTask(taskId, title, description, priority, dueDate)
+                taskRepository.updateTask(taskId, title, description, priority, dueDate, isCompleted)
                 loadProjectContent(projectId, _state.value.projectName, _state.value.currentUserId)
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message) }
@@ -125,6 +125,17 @@ class ProjectDetailsViewModel(
                 loadProjectContent(projectId, _state.value.projectName, _state.value.currentUserId)
             } catch (e: Exception) {
                 _state.update { it.copy(error = "Error al añadir miembro") }
+            }
+        }
+    }
+
+    fun toggleTaskStatus(taskId: Long, isCompleted: Boolean, projectId: Long) {
+        viewModelScope.launch {
+            try {
+                taskRepository.updateTaskCompletion(taskId, isCompleted)
+                loadProjectContent(projectId, _state.value.projectName, _state.value.currentUserId)
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message) }
             }
         }
     }

@@ -46,13 +46,14 @@ class TaskRepository {
         }
     }
 
-    suspend fun updateTask(taskId: Long, title: String, description: String?, priority: String, dueDate: String?) {
+    suspend fun updateTask(taskId: Long, title: String, description: String?, priority: String, dueDate: String?, isCompleted: Boolean) {
         SupabaseClient.client.from("task").update(
             {
                 set("title", title)
                 set("description", description)
                 set("priority", priority)
                 set("due_date", dueDate)
+                set("is_completed", isCompleted)
             }
         ) {
             filter { eq("id", taskId) }
@@ -61,6 +62,16 @@ class TaskRepository {
 
     suspend fun deleteTask(taskId: Long) {
         SupabaseClient.client.from("task").delete {
+            filter { eq("id", taskId) }
+        }
+    }
+
+    suspend fun updateTaskCompletion(taskId: Long, isCompleted: Boolean) {
+        SupabaseClient.client.from("task").update(
+            {
+                set("is_completed", isCompleted)
+            }
+        ) {
             filter { eq("id", taskId) }
         }
     }

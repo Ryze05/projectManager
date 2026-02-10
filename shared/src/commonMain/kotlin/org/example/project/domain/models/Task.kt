@@ -11,5 +11,6 @@ data class Task(
     val priority: String = "media",
     val created_at: String? = null,
     @SerialName("due_date") val dueDate: String? = null,
+    @SerialName("is_completed") val isCompleted: Boolean = false,
     val profiles: List<Profile> = emptyList()
 )

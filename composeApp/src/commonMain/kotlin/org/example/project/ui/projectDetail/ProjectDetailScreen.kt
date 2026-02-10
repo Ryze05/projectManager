@@ -24,6 +24,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
@@ -49,12 +52,15 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -83,7 +89,7 @@ fun ProjectDetailScreen(
     projectName: String,
     viewModel: ProjectDetailsViewModel = viewModel(),
     onBack: () -> Unit,
-    onTaskClick: (Long) -> Unit
+    onTaskClick: (Long, String) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
@@ -662,63 +668,167 @@ fun ProjectDetailScreen(
                     }
 
                     items(it.task) { task ->
+
                         var showTaskOptions by remember { mutableStateOf(false) }
                         var showEditTaskDialog by remember { mutableStateOf(false) }
 
                         var editTaskTitle by remember { mutableStateOf(task.title) }
                         var editTaskDescription by remember { mutableStateOf(task.description ?: "") }
                         var editTaskPriority by remember { mutableStateOf(task.priority) }
+                        var editIsCompleted by remember { mutableStateOf(task.isCompleted) }
 
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .clickable { onTaskClick(task.id!!) },
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
-                            shape = RoundedCornerShape(16.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier.size(48.dp).background(Color(0xFFFDE68A), RoundedCornerShape(12.dp)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(Icons.Default.Assignment, null, tint = Color(0xFFB45309), modifier = Modifier.size(24.dp))
-                                }
 
-                                Spacer(Modifier.width(16.dp))
+                        val dismissState = rememberSwipeToDismissBoxState(
+                            confirmValueChange = { value ->
+                                when (value) {
+                                    SwipeToDismissBoxValue.StartToEnd -> {
+                                        viewModel.toggleTaskStatus(task.id!!, !task.isCompleted, projectId)
+                                        false
+                                    }
 
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = task.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                                    Text(text = "Prioridad: ${task.priority.capitalize()}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                                }
-
-                                if (state.isAdmin) {
-                                    Box {
-                                        IconButton(onClick = { showTaskOptions = true }) {
-                                            Icon(Icons.Default.MoreVert, null, tint = Color.LightGray)
+                                    SwipeToDismissBoxValue.EndToStart -> {
+                                        if (state.isAdmin) {
+                                            viewModel.deleteTask(task.id!!, projectId)
+                                            true
+                                        } else {
+                                            false
                                         }
-                                        DropdownMenu(
-                                            expanded = showTaskOptions,
-                                            onDismissRequest = { showTaskOptions = false }
-                                        ) {
-                                            DropdownMenuItem(
-                                                text = { Text("Editar tarea") },
-                                                onClick = {
-                                                    showTaskOptions = false
-                                                    showEditTaskDialog = true
-                                                }
+                                    }
+                                    else -> false
+                                }
+                            }
+                        )
+
+                        SwipeToDismissBox(
+                            state = dismissState,
+                            enableDismissFromStartToEnd = true,
+                            enableDismissFromEndToStart = state.isAdmin,
+                            backgroundContent = {
+                                val direction = dismissState.dismissDirection
+                                val color = when (direction) {
+                                    SwipeToDismissBoxValue.StartToEnd -> if (task.isCompleted) Color(0xFFF44336) else Color(0xFF4CAF50)
+                                    SwipeToDismissBoxValue.EndToStart -> Color(0xFFEF4444) // Rojo para eliminar
+                                    else -> Color.Transparent
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(vertical = 4.dp)
+                                        .background(color, RoundedCornerShape(16.dp))
+                                        .padding(horizontal = 20.dp),
+                                    contentAlignment = when (direction) {
+                                        SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+                                        else -> Alignment.CenterEnd
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = when (direction) {
+                                            SwipeToDismissBoxValue.StartToEnd -> if (task.isCompleted) Icons.Default.Close else Icons.Default.Check
+                                            else -> Icons.Default.Delete
+                                        },
+                                        contentDescription = null,
+                                        tint = Color.White
+                                    )
+                                }
+                            }
+                        ) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clickable { onTaskClick(task.id!!, projectName) },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (task.isCompleted) Color(0xFFF1F5F9) else Color.White
+                                ),
+                                shape = RoundedCornerShape(16.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = if (task.isCompleted) 0.dp else 2.dp),
+                                border = if (task.isCompleted) BorderStroke(1.dp, Color(0xFFE2E8F0)) else null
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .background(
+                                                if (task.isCompleted) Color(0xFFDCFCE7) else Color(0xFFFDE68A),
+                                                RoundedCornerShape(12.dp)
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = if (task.isCompleted) Icons.Default.Check else Icons.Default.Assignment,
+                                            contentDescription = null,
+                                            tint = if (task.isCompleted) Color(0xFF15803D) else Color(0xFFB45309),
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+
+                                    Spacer(Modifier.width(16.dp))
+
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = task.title,
+                                                style = MaterialTheme.typography.bodyLarge.copy(
+                                                    textDecoration = if (task.isCompleted)
+                                                        androidx.compose.ui.text.style.TextDecoration.LineThrough
+                                                    else
+                                                        androidx.compose.ui.text.style.TextDecoration.None
+                                                ),
+                                                fontWeight = FontWeight.Bold,
+                                                color = if (task.isCompleted) Color.Gray else Color.Black
                                             )
-                                            DropdownMenuItem(
-                                                text = { Text("Eliminar tarea", color = Color.Red) },
-                                                onClick = {
-                                                    showTaskOptions = false
-                                                    viewModel.deleteTask(task.id!!, projectId)
-                                                }
-                                            )
+
+                                            Spacer(Modifier.width(8.dp))
+
+                                            Surface(
+                                                color = if (task.isCompleted) Color(0xFFDCFCE7) else Color(0xFFE0E7FF),
+                                                shape = RoundedCornerShape(8.dp)
+                                            ) {
+                                                Text(
+                                                    text = if (task.isCompleted) "Hecho" else "Pendiente",
+                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = if (task.isCompleted) Color(0xFF15803D) else Color(0xFF4338CA)
+                                                )
+                                            }
+                                        }
+
+                                        Text(
+                                            text = "Prioridad: ${task.priority.replaceFirstChar { it.uppercase() }}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color.Gray
+                                        )
+                                    }
+
+                                    if (state.isAdmin) {
+                                        Box {
+                                            IconButton(onClick = { showTaskOptions = true }) {
+                                                Icon(Icons.Default.MoreVert, null, tint = Color.LightGray)
+                                            }
+                                            DropdownMenu(
+                                                expanded = showTaskOptions,
+                                                onDismissRequest = { showTaskOptions = false }
+                                            ) {
+                                                DropdownMenuItem(
+                                                    text = { Text("Editar tarea") },
+                                                    onClick = {
+                                                        showTaskOptions = false
+                                                        showEditTaskDialog = true
+                                                    }
+                                                )
+                                                DropdownMenuItem(
+                                                    text = { Text("Eliminar tarea", color = Color.Red) },
+                                                    onClick = {
+                                                        showTaskOptions = false
+                                                        viewModel.deleteTask(task.id!!, projectId)
+                                                    }
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -756,6 +866,31 @@ fun ProjectDetailScreen(
                                                 )
                                             }
                                         }
+
+                                        // --- NUEVO: SELECTOR DE ESTADO DENTRO DEL EDITAR TAREA ---
+                                        Text("Estado de la tarea", style = MaterialTheme.typography.labelMedium)
+                                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            FilterChip(
+                                                selected = !editIsCompleted,
+                                                onClick = { editIsCompleted = false },
+                                                label = { Text("Pendiente") },
+                                                leadingIcon = if (!editIsCompleted) {
+                                                    { Icon(Icons.Default.Close, null, Modifier.size(18.dp)) }
+                                                } else null
+                                            )
+                                            FilterChip(
+                                                selected = editIsCompleted,
+                                                onClick = { editIsCompleted = true },
+                                                label = { Text("Hecho") },
+                                                leadingIcon = if (editIsCompleted) {
+                                                    { Icon(Icons.Default.Check, null, Modifier.size(18.dp)) }
+                                                } else null,
+                                                colors = FilterChipDefaults.filterChipColors(
+                                                    selectedContainerColor = Color(0xFFDCFCE7),
+                                                    selectedLabelColor = Color(0xFF15803D)
+                                                )
+                                            )
+                                        }
                                     }
                                 },
                                 confirmButton = {
@@ -767,6 +902,7 @@ fun ProjectDetailScreen(
                                                     title = editTaskTitle,
                                                     description = editTaskDescription,
                                                     priority = editTaskPriority,
+                                                    isCompleted = editIsCompleted,
                                                     dueDate = task.dueDate,
                                                     projectId = projectId
                                                 )

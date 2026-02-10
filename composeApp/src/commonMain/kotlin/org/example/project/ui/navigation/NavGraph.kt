@@ -27,10 +27,11 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     }
 
     data object TaskDetails : Screen(
-        route = "task_details/{taskId}/{projectId}",
+        route = "task_details/{taskId}/{projectId}/{projectName}",
         title = "Detalle de Tarea",
         icon = Icons.Default.DateRange
     ) {
-        fun createRoute(taskId: Long, projectId: Long) = "task_details/$taskId/$projectId"
+        fun createRoute(taskId: Long, projectId: Long, projectName: String) =
+            "task_details/$taskId/$projectId/$projectName"
     }
 }

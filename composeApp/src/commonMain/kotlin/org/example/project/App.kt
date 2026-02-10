@@ -183,8 +183,8 @@ fun App() {
                             projectName = name,
                             onBack = { navController.popBackStack() },
                             viewModel = viewModelProjectDetail,
-                            onTaskClick = { taskId ->
-                                navController.navigate(Screen.TaskDetails.createRoute(taskId, id))
+                            onTaskClick = { taskId, projName ->
+                                navController.navigate(Screen.TaskDetails.createRoute(taskId, id, projName))
                             }
                         )
                     }
@@ -193,15 +193,18 @@ fun App() {
                         route = Screen.TaskDetails.route,
                         arguments = listOf(
                             navArgument("taskId") { type = NavType.LongType },
-                            navArgument("projectId") { type = NavType.LongType }
+                            navArgument("projectId") { type = NavType.LongType },
+                            navArgument("projectName") { type = NavType.StringType }
                         )
                     ) { backStackEntry ->
                         val taskId = backStackEntry.arguments?.getLong("taskId") ?: 0L
                         val projectId = backStackEntry.arguments?.getLong("projectId") ?: 0L
+                        val projectName = backStackEntry.arguments?.getString("projectName") ?: "Proyecto"
 
                         TaskDetailScreen(
                             taskId = taskId,
                             projectId = projectId,
+                            projectName = projectName,
                             viewModel = viewModelTaskDetail,
                             onBack = { navController.popBackStack() }
                         )
