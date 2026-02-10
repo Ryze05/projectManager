@@ -22,7 +22,7 @@ class ProjectViewModel(
             try {
                 val profile = authRepository.getCurrentUserProfile()
 
-                val projects = projectRepository.getProjectsByStatus(profileId, status)
+                val projects = projectRepository.getProjectsWithProgress(profileId, status)
 
                 _state.update { it.copy(isLoading = false, projects = projects, isAdmin = profile?.isAdmin ?: false) }
             } catch (e: Exception) {

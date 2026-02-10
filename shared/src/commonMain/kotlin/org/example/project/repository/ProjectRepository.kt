@@ -106,4 +106,20 @@ class ProjectRepository {
             filter { eq("id", projectId) }
         }
     }
+
+    suspend fun getProjectsWithProgress(profileId: String, status: String): List<Project> {
+        return try {
+            SupabaseClient.client.from("project_with_progress")
+                .select(columns = Columns.raw("*, project_member!inner(profile_id)")) {
+                    filter {
+                        eq("project_member.profile_id", profileId)
+                        eq("status", status)
+                    }
+                }
+                .decodeList<Project>()
+        } catch (e: Exception) {
+            println("ERROR_VISTA: ${e.message}")
+            emptyList()
+        }
+    }
 }

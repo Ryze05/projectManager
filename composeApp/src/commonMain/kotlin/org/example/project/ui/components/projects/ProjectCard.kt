@@ -34,6 +34,11 @@ import org.example.project.ui.projects.ProjectUiState
 fun ProjectCard(project: Project, navController: NavController) {
     val uiState = remember(project) { ProjectUiState(project) }
     val (statusTextColor, statusBgColor) = uiState.statusColors
+    val progress = remember(project) {
+        if (project.totalTasks > 0) {
+            project.completedTasks.toFloat() / project.totalTasks.toFloat()
+        } else 0f
+    }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -88,12 +93,12 @@ fun ProjectCard(project: Project, navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 LinearProgressIndicator(
-                    progress = { 0.4f },
+                    progress = { progress },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(8.dp)
                         .clip(RoundedCornerShape(4.dp)),
-                    color = Color(0xFF2563EB),
+                    color = if (progress >= 1f) Color(0xFF22C55E) else Color(0xFF2563EB),
                     trackColor = Color(0xFFE0E0E0),
                 )
             }
