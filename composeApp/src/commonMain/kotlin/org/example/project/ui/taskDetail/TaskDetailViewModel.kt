@@ -32,18 +32,38 @@ class TaskDetailViewModel(
         }
     }
 
-    fun assignMember(profileId: String, projectId: Long) {
-        if (!_state.value.isAdmin) return
-        val currentTaskId = _state.value.task?.id ?: return
+    fun assignMember(profileId: String) {
+        val currentTask = _state.value.task ?: return
+        val userToAdd = _state.value.projectMembers.find { it.id == profileId } ?: return
+        val oldProfiles = currentTask.profiles
+
+        _state.update { it.copy(
+            task = currentTask.copy(profiles = oldProfiles + userToAdd)
+        )}
+
         viewModelScope.launch {
             try {
-                taskRepository.assignUserToTask(currentTaskId, profileId)
-                loadTaskData(currentTaskId, projectId)
+                taskRepository.assignUserToTask(currentTask.id!!, profileId)
             } catch (e: Exception) {
-                // ESTO ES CLAVE: Imprime el error real en la consola
-                println("ERROR_ASSIGN_MEMBER: ${e.message}")
-                e.printStackTrace()
-                _state.update { it.copy(error = "Error al asignar: ${e.message}") }
+                _state.update { it.copy(task = currentTask.copy(profiles = oldProfiles), error = e.message) }
+            }
+        }
+    }
+
+    fun unassignMember(profileId: String) {
+        val currentTask = _state.value.task ?: return
+        val oldProfiles = currentTask.profiles
+
+        _state.update { it.copy(
+            task = currentTask.copy(profiles = oldProfiles.filter { it.id != profileId })
+        )}
+
+        viewModelScope.launch {
+            try {
+                taskRepository.unassignUserFromTask(currentTask.id!!, profileId)
+            } catch (e: Exception) {
+                // Rollback
+                _state.update { it.copy(task = currentTask.copy(profiles = oldProfiles), error = e.message) }
             }
         }
     }

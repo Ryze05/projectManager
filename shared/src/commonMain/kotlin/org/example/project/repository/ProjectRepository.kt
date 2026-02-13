@@ -122,4 +122,13 @@ class ProjectRepository {
             emptyList()
         }
     }
+
+    suspend fun removeMemberFromProject(profileId: String, projectId: Long) {
+        SupabaseClient.client.from("project_member").delete {
+            filter {
+                eq("profile_id", profileId)
+                eq("project_id", projectId)
+            }
+        }
+    }
 }

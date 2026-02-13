@@ -5,13 +5,16 @@ import org.example.project.domain.models.Section
 import org.example.project.network.SupabaseClient
 
 class SectionRepository {
-    suspend fun createSection(name: String, projectId: Long, priority: String) {
-        val newSection = Section(
+    suspend fun createSection(name: String, projectId: Long, priority: String): Section {
+        val sectionToInsert = Section(
             name = name,
             project_id = projectId,
             priority = priority
         )
-        SupabaseClient.client.from("section").insert(newSection)
+
+        return SupabaseClient.client.from("section").insert(sectionToInsert) {
+            select()
+        }.decodeSingle<Section>()
     }
 
     suspend fun updateSection(sectionId: Long, name: String, priority: String) {
