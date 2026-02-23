@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -22,6 +23,7 @@ import org.example.project.ui.auth.AuthViewModel
 import org.example.project.ui.auth.LoginScreen
 import org.example.project.ui.auth.RegisterScreen
 import org.example.project.ui.home.HomeScreen
+import org.example.project.ui.home.HomeViewModel
 import org.example.project.ui.projects.ProjectsScreen
 import org.example.project.ui.profile.ProfileScreen
 import org.example.project.ui.navigation.Screen
@@ -52,6 +54,10 @@ fun App() {
 
         // TASK DETAIL
         val viewModelTaskDetail = remember { TaskDetailViewModel(taskRepository, projectRepository, authRepository) }
+
+        // HOME
+        val viewModelHome = remember { HomeViewModel(authRepository, projectRepository, sectionRepository) }
+
 
 
         // --- 1. LÓGICA DE SESIÓN PERSISTENTE ---
@@ -139,7 +145,7 @@ fun App() {
 
                     // --- FLUJO DE LA APLICACIÓN ---
                     composable(Screen.Home.route) {
-                        HomeScreen()
+                        HomeScreen(viewModel = viewModelHome, navController = navController)
                     }
 
                     composable(Screen.Projects.route) {

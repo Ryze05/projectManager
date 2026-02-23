@@ -33,4 +33,10 @@ class SectionRepository {
             filter { eq("id", sectionId) }
         }
     }
+
+    suspend fun getSectionsByProject(projectId: Long): List<Section> {
+        return SupabaseClient.client.from("section").select {
+            filter { eq("project_id", projectId) }
+        }.decodeList<Section>()
+    }
 }
