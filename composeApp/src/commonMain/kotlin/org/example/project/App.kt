@@ -35,6 +35,7 @@ import org.example.project.ui.auth.RegisterScreen
 import org.example.project.ui.components.chat.ChatScreen
 import org.example.project.ui.components.chat.ChatViewModel
 import org.example.project.ui.home.HomeScreen
+import org.example.project.ui.home.HomeViewModel
 import org.example.project.ui.projects.ProjectsScreen
 import org.example.project.ui.profile.ProfileScreen
 import org.example.project.ui.navigation.Screen
@@ -65,6 +66,15 @@ fun App() {
 
         // TASK DETAIL
         val viewModelTaskDetail = remember { TaskDetailViewModel(taskRepository, projectRepository, authRepository) }
+
+        // HOME
+        val viewModelHome = remember {
+            HomeViewModel(
+                authRepository,
+                projectRepository,
+                sectionRepository
+            )
+        }
 
         // --- ESTADOS PARA EL MENÚ DE CHAT ---
         val coroutineScope = rememberCoroutineScope()
@@ -99,66 +109,12 @@ fun App() {
                 CircularProgressIndicator()
             }
         } else {
-            // --- DIÁLOGO DEL MENÚ DE SALAS DE CHAT ---
-            if (showChatMenu) {
-                AlertDialog(
-                    onDismissRequest = { showChatMenu = false },
-                    title = { Text("¿A qué sala quieres entrar?") },
-                    text = {
-                        if (chatProjectsList.isEmpty()) {
-                            Text("No tienes proyectos activos.")
-                        } else {
-                            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                items(chatProjectsList) { project ->
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                showChatMenu = false
-                                                // Navegamos pasando el ID del proyecto
-                                                navController.navigate("chat_screen/${project.id}")
-                                            },
-                                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                                        elevation = CardDefaults.cardElevation(2.dp)
-                                    ) {
-                                        Text(
-                                            text = "💬 Chat de ${project.title}",
-                                            modifier = Modifier.padding(16.dp),
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    confirmButton = {
-                        TextButton(onClick = { showChatMenu = false }) { Text("Cancelar") }
-                    },
-                    containerColor = Color(0xFFF5F6FA)
-                )
-            }
 
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
                 containerColor = MaterialTheme.colorScheme.background,
-                // --- BOTÓN FLOTANTE MÁGICO ---
-                floatingActionButton = {
-                    if (currentRoute == Screen.Home.route || currentRoute == Screen.Projects.route) {
-                        FloatingActionButton(
-                            onClick = {
-                                coroutineScope.launch {
-                                    chatProjectsList = projectRepository.getMyProjects()
-                                    showChatMenu = true
-                                }
-                            },
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = Color.White
-                        ) {
-                            Icon(Icons.Default.Comment, contentDescription = "Salas de Chat")
-                        }
-                    }
-                },
                 bottomBar = {
+                    // Solo mostramos la barra si estamos en una pantalla principal
                     if (bottomBarScreens.any { it.route == currentRoute }) {
                         NavigationBar(
                             containerColor = MaterialTheme.colorScheme.surface,
@@ -207,7 +163,7 @@ fun App() {
                     }
 
                     composable(Screen.Home.route) {
-                        HomeScreen()
+                        HomeScreen(viewModel = viewModelHome, navController = navController, authRepository = authRepository)
                     }
 
                     composable(Screen.Projects.route) {
