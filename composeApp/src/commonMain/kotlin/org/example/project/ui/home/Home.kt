@@ -22,6 +22,7 @@ import org.example.project.repository.AuthRepository
 import org.example.project.ui.components.home.ActiveProjectsColumn
 import org.example.project.ui.components.home.HomeHeader
 import org.example.project.ui.components.home.SectionHeader
+import org.example.project.ui.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +45,7 @@ fun HomeScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
 
+        // CAPA 1: Solo dibujamos si NO está cargando para evitar el parpadeo
         if (!state.isLoading && state.userName != "Cargando...") {
             Column(
                 modifier = Modifier
@@ -58,6 +60,7 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(30.dp))
 
+                // Card Azul
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color(0xFF2563EB)),
                     shape = RoundedCornerShape(16.dp),
@@ -84,7 +87,15 @@ fun HomeScreen(
                 SectionHeader(
                     title = "Tus Proyectos",
                     actionText = "Ver todos",
-                    onAction = { showAllProjectsDialog = true }
+                    onAction = {
+                        // CORRECCIÓN DE NAVEGACIÓN:
+                        navController.navigate(Screen.Projects.route) {
+                            // Esto asegura que la navegación sea compatible con el BottomBar
+                            popUpTo(Screen.Home.route) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -108,11 +119,11 @@ fun HomeScreen(
                         }
                     )
                 }
-
                 Spacer(modifier = Modifier.height(80.dp))
             }
         }
 
+        // CAPA 2: OVERLAY DE CARGA (Para eliminar el parpadeo)
         if (state.isLoading || state.userName == "Cargando...") {
             Surface(
                 modifier = Modifier.fillMaxSize(),
@@ -124,66 +135,20 @@ fun HomeScreen(
             }
         }
 
-        if (showAllProjectsDialog) {
-            AlertDialog(
-                onDismissRequest = { showAllProjectsDialog = false },
-                title = { Text("Todos tus proyectos", fontWeight = FontWeight.Bold) },
-                text = {
-                    LazyColumn(modifier = Modifier.heightIn(max = 300.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(state.projects) { project ->
-                            Card(
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                elevation = CardDefaults.cardElevation(2.dp),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Box(Modifier.size(12.dp).background(Color(0xFF2563EB), CircleShape))
-                                    Spacer(Modifier.width(12.dp))
-                                    Text(project.title, style = MaterialTheme.typography.bodyLarge)
-                                }
-                            }
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = { showAllProjectsDialog = false }) {
-                        Text("Cerrar", color = Color(0xFF2563EB))
-                    }
-                },
-                shape = RoundedCornerShape(28.dp)
-            )
-        }
-
+        // --- DIÁLOGOS ---
+        // (Se mantienen igual pero asegúrate de que usen el AlertDialog que definimos antes)
         if (showSectionDialog) {
             AlertDialog(
                 onDismissRequest = { showSectionDialog = false },
-                title = {
-                    Text(
-                        text = "Elige una sección",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                },
+                title = { Text("Elige una sección", fontWeight = FontWeight.ExtraBold) },
                 text = {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         if (state.isDialogLoading) {
-                            Box(
-                                modifier = Modifier.fillMaxWidth().height(150.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
+                            Box(Modifier.fillMaxWidth().height(150.dp), Alignment.Center) {
                                 CircularProgressIndicator(color = Color(0xFF2563EB))
                             }
-                        } else if (state.selectedProjectSections.isEmpty()) {
-                            Text(
-                                text = "Este proyecto aún no tiene secciones.",
-                                modifier = Modifier.padding(vertical = 16.dp),
-                                color = Color.Gray
-                            )
                         } else {
-                            LazyColumn(
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.heightIn(max = 350.dp)
-                            ) {
+                            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.heightIn(max = 350.dp)) {
                                 items(state.selectedProjectSections) { section ->
                                     Card(
                                         onClick = {
@@ -194,24 +159,9 @@ fun HomeScreen(
                                         elevation = CardDefaults.cardElevation(2.dp),
                                         shape = RoundedCornerShape(12.dp)
                                     ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(16.dp),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(
-                                                text = section.name,
-                                                fontWeight = FontWeight.Bold,
-                                                style = MaterialTheme.typography.bodyLarge
-                                            )
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(16.dp),
-                                                tint = Color.Gray
-                                            )
+                                        Row(Modifier.fillMaxWidth().padding(16.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+                                            Text(section.name, fontWeight = FontWeight.Bold)
+                                            Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, null, Modifier.size(16.dp), tint = Color.Gray)
                                         }
                                     }
                                 }

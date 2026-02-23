@@ -23,10 +23,8 @@ class HomeViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             try {
-                // 1. Obtenemos el perfil completo para el nombre y el rol
                 val profile = authRepository.getCurrentUserProfile()
 
-                // 2. Obtenemos los proyectos usando el ID que nos pasan (tu estilo)
                 val projects = projectRepository.getProjectsWithProgress(profileId, "active")
 
                 _state.update { it.copy(
