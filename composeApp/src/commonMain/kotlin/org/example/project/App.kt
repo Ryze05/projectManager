@@ -1,12 +1,21 @@
 package org.example.project
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -14,6 +23,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import kotlinx.coroutines.launch
+import org.example.project.domain.models.Project
 import org.example.project.repository.AuthRepository
 import org.example.project.repository.ProjectRepository
 import org.example.project.repository.SectionRepository
@@ -21,6 +32,8 @@ import org.example.project.repository.TaskRepository
 import org.example.project.ui.auth.AuthViewModel
 import org.example.project.ui.auth.LoginScreen
 import org.example.project.ui.auth.RegisterScreen
+import org.example.project.ui.components.chat.ChatScreen
+import org.example.project.ui.components.chat.ChatViewModel
 import org.example.project.ui.home.HomeScreen
 import org.example.project.ui.home.HomeViewModel
 import org.example.project.ui.projects.ProjectsScreen
@@ -55,9 +68,18 @@ fun App() {
         val viewModelTaskDetail = remember { TaskDetailViewModel(taskRepository, projectRepository, authRepository) }
 
         // HOME
-        val viewModelHome = remember { HomeViewModel(authRepository, projectRepository, sectionRepository) }
+        val viewModelHome = remember {
+            HomeViewModel(
+                authRepository,
+                projectRepository,
+                sectionRepository
+            )
+        }
 
-
+        // --- ESTADOS PARA EL MENÚ DE CHAT ---
+        val coroutineScope = rememberCoroutineScope()
+        var showChatMenu by remember { mutableStateOf(false) }
+        var chatProjectsList by remember { mutableStateOf<List<Project>>(emptyList()) }
 
         // --- 1. LÓGICA DE SESIÓN PERSISTENTE ---
         var isLoadingSession by remember { mutableStateOf(true) }
@@ -83,11 +105,11 @@ fun App() {
         )
 
         if (isLoadingSession) {
-            // Pantalla de espera mientras se verifica Supabase
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         } else {
+
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
                 containerColor = MaterialTheme.colorScheme.background,
@@ -116,13 +138,11 @@ fun App() {
                     }
                 }
             ) { innerPadding ->
-                // --- 3. CONTENEDOR DE NAVEGACIÓN ---
                 NavHost(
                     navController = navController,
                     startDestination = startDestination,
-                    modifier = Modifier.padding(innerPadding) // Evita que el contenido quede bajo la barra
+                    modifier = Modifier.padding(innerPadding)
                 ) {
-                    // --- FLUJO DE AUTENTICACIÓN ---
                     composable(Screen.Login.route) {
                         LoginScreen(
                             viewModel = viewModelAuth,
@@ -142,7 +162,6 @@ fun App() {
                         )
                     }
 
-                    // --- FLUJO DE LA APLICACIÓN ---
                     composable(Screen.Home.route) {
                         HomeScreen(viewModel = viewModelHome, navController = navController, authRepository = authRepository)
                     }
@@ -156,7 +175,6 @@ fun App() {
                     }
 
                     composable(Screen.Tasks.route) {
-                        // Placeholder si aún no tienes esta pantalla creada
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Text("Agenda y Tareas")
                         }
@@ -211,6 +229,20 @@ fun App() {
                             projectId = projectId,
                             projectName = projectName,
                             viewModel = viewModelTaskDetail,
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+
+                    // --- NUEVA RUTA DEL CHAT ---
+                    composable(
+                        route = "chat_screen/{projectId}",
+                        arguments = listOf(navArgument("projectId") { type = NavType.LongType })
+                    ) { backStackEntry ->
+                        val projectId = backStackEntry.arguments?.getLong("projectId") ?: 0L
+                        val chatViewModel = remember(projectId) { ChatViewModel(projectId) }
+
+                        ChatScreen(
+                            viewModel = chatViewModel,
                             onBack = { navController.popBackStack() }
                         )
                     }

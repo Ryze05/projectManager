@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.example.project.domain.models.Project
 import org.example.project.repository.AuthRepository
 import org.example.project.repository.ProjectRepository
 import org.example.project.repository.SectionRepository
@@ -55,5 +56,9 @@ class HomeViewModel(
                 _state.update { it.copy(isDialogLoading = false, error = e.message) }
             }
         }
+    }
+
+    suspend fun getMyProjectsForChat(): List<Project> {
+        return projectRepository.getMyProjects()
     }
 }

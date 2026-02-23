@@ -1,6 +1,7 @@
 package org.example.project.ui.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Home
@@ -17,6 +18,10 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     data object Projects : Screen("projects", "Proyectos", Icons.Default.Folder)
     data object Tasks : Screen("tasks", "Agenda", Icons.Default.DateRange)
     data object Profile : Screen("profile", "Perfil", Icons.Default.Person)
+
+    data object Chat : Screen("chat_screen/{projectId}", "Chat", Icons.Default.Comment) {
+        fun createRoute(projectId: Long) = "chat_screen/$projectId"
+    }
 
     data object ProjectDetails : Screen(
         route = "project_details/{projectId}/{projectName}",

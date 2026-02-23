@@ -122,6 +122,17 @@ class ProjectRepository {
             emptyList()
         }
     }
+    suspend fun getMyProjects(): List<Project> {
+        return try {
+            SupabaseClient.client
+                .from("project") // Asegúrate de que tu tabla en Supabase se llama "project"
+                .select()
+                .decodeList<Project>()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
 
     suspend fun removeMemberFromProject(profileId: String, projectId: Long) {
         SupabaseClient.client.from("project_member").delete {
