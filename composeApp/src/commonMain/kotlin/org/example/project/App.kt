@@ -8,7 +8,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -145,7 +144,7 @@ fun App() {
 
                     // --- FLUJO DE LA APLICACIÓN ---
                     composable(Screen.Home.route) {
-                        HomeScreen(viewModel = viewModelHome, navController = navController)
+                        HomeScreen(viewModel = viewModelHome, navController = navController, authRepository = authRepository)
                     }
 
                     composable(Screen.Projects.route) {

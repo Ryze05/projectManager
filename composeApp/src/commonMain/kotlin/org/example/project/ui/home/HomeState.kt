@@ -8,7 +8,7 @@ data class HomeState(
     val projects: List<Project> = emptyList(),
     val selectedProjectSections: List<Section> = emptyList(),
     val isDialogLoading: Boolean = false,
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val isAdmin: Boolean = false,
     val error: String? = null
 )

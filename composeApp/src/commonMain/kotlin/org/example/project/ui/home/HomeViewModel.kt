@@ -19,25 +19,18 @@ class HomeViewModel(
     private val _state = MutableStateFlow(HomeState())
     val state = _state.asStateFlow()
 
-    init {
-        loadInitialData()
-    }
-
-    private fun loadInitialData() {
+    fun loadHomeData(profileId: String) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             try {
+                // 1. Obtenemos el perfil completo para el nombre y el rol
                 val profile = authRepository.getCurrentUserProfile()
-                val name = profile?.fullName ?: "Usuario"
 
-                val projects = if (profile != null) {
-                    projectRepository.getProjectsWithProgress(profile.id, "active")
-                } else {
-                    emptyList()
-                }
+                // 2. Obtenemos los proyectos usando el ID que nos pasan (tu estilo)
+                val projects = projectRepository.getProjectsWithProgress(profileId, "active")
 
                 _state.update { it.copy(
-                    userName = name,
+                    userName = profile?.fullName ?: "Usuario",
                     projects = projects,
                     isLoading = false,
                     isAdmin = profile?.isAdmin ?: false
@@ -45,7 +38,7 @@ class HomeViewModel(
             } catch (e: Exception) {
                 _state.update { it.copy(
                     isLoading = false,
-                    error = "Error al cargar datos de inicio: ${e.message}"
+                    error = "Error: ${e.message}"
                 ) }
             }
         }
@@ -56,16 +49,12 @@ class HomeViewModel(
             _state.update { it.copy(isDialogLoading = true, selectedProjectSections = emptyList()) }
             try {
                 val sections = sectionRepository.getSectionsByProject(projectId)
-
                 _state.update { it.copy(
                     isDialogLoading = false,
                     selectedProjectSections = sections
                 ) }
             } catch (e: Exception) {
-                _state.update { it.copy(
-                    isDialogLoading = false,
-                    error = "Error al cargar secciones: ${e.message}"
-                ) }
+                _state.update { it.copy(isDialogLoading = false, error = e.message) }
             }
         }
     }
