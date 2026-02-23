@@ -88,9 +88,7 @@ fun HomeScreen(
                     title = "Tus Proyectos",
                     actionText = "Ver todos",
                     onAction = {
-                        // CORRECCIÓN DE NAVEGACIÓN:
                         navController.navigate(Screen.Projects.route) {
-                            // Esto asegura que la navegación sea compatible con el BottomBar
                             popUpTo(Screen.Home.route) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
@@ -135,8 +133,6 @@ fun HomeScreen(
             }
         }
 
-        // --- DIÁLOGOS ---
-        // (Se mantienen igual pero asegúrate de que usen el AlertDialog que definimos antes)
         if (showSectionDialog) {
             AlertDialog(
                 onDismissRequest = { showSectionDialog = false },
