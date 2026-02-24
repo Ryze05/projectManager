@@ -1,7 +1,7 @@
 package org.example.project.repository
 
 import io.github.jan.supabase.postgrest.from
-import org.example.project.domain.models.Section
+import io.github.jan.supabase.postgrest.postgrest
 import org.example.project.domain.models.Task
 import org.example.project.domain.models.TaskAssignment
 import org.example.project.network.SupabaseClient
@@ -34,7 +34,39 @@ class TaskRepository {
             println("ERROR REPO ASSIGN: ${e.message}")
         }
     }
+    suspend fun getAllTasksForAgenda(): List<Task> {
+        return try {
+            // Usamos la función RPC de Supabase para que nos devuelva
+            // las tareas junto con el nombre del proyecto (projectTitle)
+            SupabaseClient.client
+                .postgrest.rpc("get_my_agenda_tasks")
+                .decodeList<Task>()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
 
+    // 2. OBTENER TAREAS DE UNA SECCIÓN CONCRETA (Para cuando entras desde un proyecto)
+    suspend fun getTasksBySection(sectionId: Long): List<Task> {
+        return try {
+            SupabaseClient.client.from("task")
+                .select {
+                    filter { eq("section_id", sectionId) }
+                }
+                .decodeList<Task>()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    // 3. ADAPTADOR PARA EL CHECKBOX
+    // En tu repo ya tienes 'updateTaskCompletion', pero el ViewModel llama a 'toggleTaskCompletion'
+    // Con esta pequeña función hacemos de puente para que no te dé error en rojo.
+    suspend fun toggleTaskCompletion(taskId: Long?, isCompleted: Boolean) {
+        updateTaskCompletion(taskId, isCompleted)
+    }
     suspend fun unassignUserFromTask(taskId: Long, profileId: String) {
         SupabaseClient.client.from("task_assignment").delete {
             filter {
@@ -80,13 +112,17 @@ class TaskRepository {
         }
     }
 
-    suspend fun updateTaskCompletion(taskId: Long, isCompleted: Boolean) {
+    suspend fun updateTaskCompletion(taskId: Long?, isCompleted: Boolean) {
         SupabaseClient.client.from("task").update(
             {
                 set("is_completed", isCompleted)
             }
         ) {
-            filter { eq("id", taskId) }
+            filter {
+                if (taskId != null) {
+                    eq("id", taskId)
+                }
+            }
         }
     }
 }
