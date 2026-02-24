@@ -26,6 +26,7 @@ import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
 import org.example.project.domain.models.Project
 import org.example.project.repository.AuthRepository
+import org.example.project.repository.ProfileRepository
 import org.example.project.repository.ProjectRepository
 import org.example.project.repository.SectionRepository
 import org.example.project.repository.TaskRepository
@@ -39,6 +40,7 @@ import org.example.project.ui.home.HomeViewModel
 import org.example.project.ui.projects.ProjectsScreen
 import org.example.project.ui.profile.ProfileScreen
 import org.example.project.ui.navigation.Screen
+import org.example.project.ui.profile.ProfileViewModel
 import org.example.project.ui.projectDetail.ProjectDetailScreen
 import org.example.project.ui.projectDetail.ProjectDetailsViewModel
 import org.example.project.ui.projects.ProjectViewModel
@@ -47,7 +49,9 @@ import org.example.project.ui.taskDetail.TaskDetailViewModel
 import org.example.project.ui.theme.ProjectManagerTheme
 
 @Composable
-fun App() {
+fun App(
+    onPickImage: (@Composable (onImagePicked: (ByteArray) -> Unit) -> () -> Unit)? = null
+) {
     ProjectManagerTheme {
         val navController = rememberNavController()
 
@@ -68,13 +72,11 @@ fun App() {
         val viewModelTaskDetail = remember { TaskDetailViewModel(taskRepository, projectRepository, authRepository) }
 
         // HOME
-        val viewModelHome = remember {
-            HomeViewModel(
-                authRepository,
-                projectRepository,
-                sectionRepository
-            )
-        }
+        val viewModelHome = remember { HomeViewModel(authRepository, projectRepository, sectionRepository) }
+
+        // PROFILE
+        val profileRepository = remember { ProfileRepository() }
+        val viewModelProfile = remember { ProfileViewModel(authRepository, profileRepository) }
 
         // --- ESTADOS PARA EL MENÚ DE CHAT ---
         val coroutineScope = rememberCoroutineScope()
@@ -181,13 +183,27 @@ fun App() {
                     }
 
                     composable(Screen.Profile.route) {
-                        ProfileScreen(
-                            onLogout = {
-                                viewModelAuth.logout()
-                                navController.navigate(Screen.Login.route) {
-                                    popUpTo(0)
+                        // Creamos un disparador vacío por defecto
+                        var triggerPicker: () -> Unit = {}
+
+                        // Si estamos en Android y nos han pasado la función, la configuramos
+                        onPickImage?.let {
+                            triggerPicker = it { bytes ->
+                                val userId = authRepository.getCurrentUserId()
+                                if (userId != null) {
+                                    viewModelProfile.uploadProfilePicture(userId, bytes)
                                 }
                             }
+                        }
+
+                        ProfileScreen(
+                            viewModel = viewModelProfile,
+                            authRepository = authRepository,
+                            onLogout = {
+                                viewModelAuth.logout()
+                                navController.navigate(Screen.Login.route) { popUpTo(0) }
+                            },
+                            onPickImage = triggerPicker // Pásale la función a la pantalla
                         )
                     }
 

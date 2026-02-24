@@ -71,12 +71,10 @@ fun HomeScreen(
             .padding(padding)
         ) {
 
-            // CAPA 1: Solo dibujamos si NO está cargando para evitar el parpadeo
             if (!state.isLoading && state.userName != "Cargando...") {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color(0xFFF5F6FA))
                         .padding(horizontal = 20.dp)
                         .verticalScroll(rememberScrollState())
                 ) {

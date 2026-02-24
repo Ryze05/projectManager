@@ -50,6 +50,8 @@ kotlin {
             implementation(projects.shared)
             implementation(libs.jetbrains.compose.navigation)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.coil.compose)
+            implementation("io.coil-kt.coil3:coil-network-ktor3:3.0.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
