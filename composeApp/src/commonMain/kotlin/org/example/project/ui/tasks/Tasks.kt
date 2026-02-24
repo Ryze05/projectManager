@@ -43,27 +43,24 @@ fun TasksScreen(
         filteredByProject.groupBy { it.projectTitle ?: "Otros" }
     }
 
-    // --- ESTADO PARA MOSTRAR LA VENTANA DE CREAR TAREA ---
     var showCreateDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         floatingActionButton = {
-            // MAGIA: El botón solo sale si NO estamos en la agenda global (0L)
             if (viewModel.currentSectionId != 0L) {
                 FloatingActionButton(
                     onClick = { showCreateDialog = true },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.primary, // <-- Adaptativo
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = CircleShape
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Nueva Tarea")
                 }
             }
         },
-        containerColor = Color(0xFFF5F6FA)
+        containerColor = MaterialTheme.colorScheme.background // <-- Fondo general adaptativo
     ) { padding ->
 
-        // --- COMPONENTE DEL DIÁLOGO ---
         if (showCreateDialog) {
             CreateTaskDialog(
                 onDismiss = { showCreateDialog = false },
@@ -85,13 +82,14 @@ fun TasksScreen(
             Text(
                 text = if (viewModel.currentSectionId == 0L) "Mi Agenda" else "Tareas de Sección",
                 style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Text(
                 text = "Organiza tu día a día",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -112,19 +110,19 @@ fun TasksScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = Color.LightGray,
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedContainerColor = MaterialTheme.colorScheme.surface, // Ya no es White
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface // Ya no es White
                         )
                     )
                     ExposedDropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false },
-                        modifier = Modifier.background(Color.White)
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface) // Ya no es White
                     ) {
                         projectNames.forEach { projectName ->
                             DropdownMenuItem(
-                                text = { Text(projectName) },
+                                text = { Text(projectName, color = MaterialTheme.colorScheme.onSurface) },
                                 onClick = {
                                     selectedProjectFilter = projectName
                                     expanded = false
@@ -138,11 +136,11 @@ fun TasksScreen(
 
             if (state.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             } else if (state.tasks.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No tienes tareas pendientes 🎉", color = Color.Gray)
+                    Text("No tienes tareas pendientes 🎉", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
                 LazyColumn(
@@ -150,20 +148,19 @@ fun TasksScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     groupedTasks.forEach { (projectTitle, tasksInProject) ->
-                        // Si estamos en la agenda global mostramos los nombres de proyectos
                         if (viewModel.currentSectionId == 0L) {
                             item {
                                 Row(
                                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Box(modifier = Modifier.size(8.dp).background(Color(0xFF2563EB), CircleShape))
+                                    Box(modifier = Modifier.size(8.dp).background(MaterialTheme.colorScheme.primary, CircleShape))
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = projectTitle,
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.Gray
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
@@ -184,11 +181,11 @@ fun TasksScreen(
     }
 }
 
-// --- INTERFAZ DE LA TARJETA DE TAREA ---
 @Composable
 fun TaskItem(task: Task, onCheckedChange: (Boolean) -> Unit) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        // Las tarjetas ahora usan el color surface (blanco en claro, gris oscuro en oscuro)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
@@ -201,7 +198,7 @@ fun TaskItem(task: Task, onCheckedChange: (Boolean) -> Unit) {
                 onCheckedChange = onCheckedChange,
                 colors = CheckboxDefaults.colors(
                     checkedColor = MaterialTheme.colorScheme.primary,
-                    uncheckedColor = Color.Gray
+                    uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
             Spacer(modifier = Modifier.width(12.dp))
@@ -211,7 +208,8 @@ fun TaskItem(task: Task, onCheckedChange: (Boolean) -> Unit) {
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
                     textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-                    color = if (task.isCompleted) Color.Gray else Color.Black
+                    // Si está tachado se ve gris (onSurfaceVariant), si no, del color del tema (onSurface)
+                    color = if (task.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
                 )
                 task.dueDate?.let { date ->
                     Spacer(modifier = Modifier.height(4.dp))
@@ -220,13 +218,13 @@ fun TaskItem(task: Task, onCheckedChange: (Boolean) -> Unit) {
                             imageVector = Icons.Default.CalendarToday,
                             contentDescription = null,
                             modifier = Modifier.size(12.dp),
-                            tint = Color.Gray
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = date,
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -235,7 +233,6 @@ fun TaskItem(task: Task, onCheckedChange: (Boolean) -> Unit) {
     }
 }
 
-// --- INTERFAZ DEL DIÁLOGO DE CREACIÓN ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTaskDialog(
@@ -252,7 +249,7 @@ fun CreateTaskDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Nueva Tarea", fontWeight = FontWeight.Bold) },
+        title = { Text("Nueva Tarea", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
@@ -270,7 +267,6 @@ fun CreateTaskDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Menú desplegable para Prioridad
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = { expanded = !expanded }
@@ -281,16 +277,20 @@ fun CreateTaskDialog(
                         readOnly = true,
                         label = { Text("Prioridad") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                        )
                     )
                     ExposedDropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false },
-                        modifier = Modifier.background(Color.White)
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface) // <-- Adaptativo
                     ) {
                         priorities.forEach { prio ->
                             DropdownMenuItem(
-                                text = { Text(prio.replaceFirstChar { it.uppercase() }) },
+                                text = { Text(prio.replaceFirstChar { it.uppercase() }, color = MaterialTheme.colorScheme.onSurface) },
                                 onClick = {
                                     priority = prio
                                     expanded = false
@@ -316,17 +316,17 @@ fun CreateTaskDialog(
                         onConfirm(title, description, priority, dueDate)
                     }
                 },
-                enabled = title.isNotBlank(), // El botón se apaga si no hay título
+                enabled = title.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text("Crear")
+                Text("Crear", color = MaterialTheme.colorScheme.onPrimary)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar", color = Color.Gray)
+                Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         },
-        containerColor = Color.White
+        containerColor = MaterialTheme.colorScheme.surface // <-- Ya no es White
     )
 }

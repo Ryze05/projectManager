@@ -12,7 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.example.project.domain.models.Message
@@ -29,20 +28,24 @@ fun ChatScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Chat del Proyecto", fontWeight = FontWeight.Bold) },
+                title = { Text("Chat del Proyecto", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
         bottomBar = {
             Surface(
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 8.dp
             ) {
                 Row(
@@ -56,11 +59,13 @@ fun ChatScreen(
                         value = inputText,
                         onValueChange = { inputText = it },
                         modifier = Modifier.weight(1f),
-                        placeholder = { Text("Escribe un mensaje...") },
+                        placeholder = { Text("Escribe un mensaje...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         shape = RoundedCornerShape(24.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = Color.LightGray,
-                            focusedBorderColor = MaterialTheme.colorScheme.primary
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -73,7 +78,7 @@ fun ChatScreen(
                             }
                         },
                         containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.White,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
                         shape = RoundedCornerShape(50)
                     ) {
                         Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar")
@@ -81,7 +86,7 @@ fun ChatScreen(
                 }
             }
         },
-        containerColor = Color(0xFFF5F6FA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -110,19 +115,20 @@ fun MessageBubble(message: Message, currentUserName: String) {
         horizontalArrangement = if (isMine) Arrangement.End else Arrangement.Start
     ) {
         Column(
-            horizontalAlignment = if (isMine) Alignment.End else Alignment.Start // Solucionado el error rojo aquí
+            horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
         ) {
             Text(
                 text = message.userName,
                 style = MaterialTheme.typography.labelSmall,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
             )
 
             Box(
                 modifier = Modifier
                     .background(
-                        color = if (isMine) MaterialTheme.colorScheme.primary else Color.White,
+                        // Los mensajes propios usan el primary (azul). Los de otros usan surfaceVariant (grisecito dinámico)
+                        color = if (isMine) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(
                             topStart = 16.dp,
                             topEnd = 16.dp,
@@ -134,7 +140,7 @@ fun MessageBubble(message: Message, currentUserName: String) {
             ) {
                 Text(
                     text = message.content,
-                    color = if (isMine) Color.White else Color.Black
+                    color = if (isMine) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                 )
             }
         }

@@ -36,6 +36,7 @@ import org.example.project.ui.projectDetail.ProjectDetailScreen
 import org.example.project.ui.projectDetail.ProjectDetailsViewModel
 import org.example.project.ui.projects.ProjectViewModel
 import org.example.project.ui.taskDetail.TaskDetailScreen
+
 import org.example.project.ui.taskDetail.TaskDetailViewModel
 import org.example.project.ui.tasks.TasksScreen
 import org.example.project.ui.theme.ProjectManagerTheme
@@ -44,8 +45,10 @@ import org.example.project.ui.theme.ProjectManagerTheme
 fun App(
     onPickImage: (@Composable (onImagePicked: (ByteArray) -> Unit) -> () -> Unit)? = null
 ) {
-    ProjectManagerTheme {
+    var isDarkTheme by remember { mutableStateOf(false) }
+    ProjectManagerTheme(darkTheme = isDarkTheme) {
         val navController = rememberNavController()
+
 
         // AUTH
         val authRepository = remember { AuthRepository() }
@@ -200,7 +203,9 @@ fun App(
                                 viewModelAuth.logout()
                                 navController.navigate(Screen.Login.route) { popUpTo(0) }
                             },
-                            onPickImage = triggerPicker
+                            onPickImage = triggerPicker,
+                            isDarkTheme = isDarkTheme,
+                            onThemeToggle = { isDarkTheme = it }
                         )
                     }
 

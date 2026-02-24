@@ -1,36 +1,19 @@
 package org.example.project.ui.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import org.example.project.repository.AuthRepository
 import org.example.project.ui.components.profile.ProfileHeader
 import org.example.project.ui.components.profile.StatCard
@@ -41,7 +24,9 @@ fun ProfileScreen(
     viewModel: ProfileViewModel,
     authRepository: AuthRepository,
     onLogout: () -> Unit,
-    onPickImage: () -> Unit
+    onPickImage: () -> Unit,
+    isDarkTheme: Boolean,
+    onThemeToggle: (Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     var showEditNameDialog by remember { mutableStateOf(false) }
@@ -80,7 +65,7 @@ fun ProfileScreen(
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().background(Color(0xFFF5F6FA)),
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
                 contentPadding = PaddingValues(bottom = 32.dp)
             ) {
                 item {
@@ -104,16 +89,15 @@ fun ProfileScreen(
                     ) {
                         StatCard(state.totalTasks.toString(), "TAREAS", Modifier.weight(1f))
                         StatCard(state.totalProjects.toString(), "PROYECTOS", Modifier.weight(1f))
-                        //StatCard("100%", "ÉXITO", Modifier.weight(1f))
                     }
                 }
 
                 if (state.isAdmin) {
                     item {
                         Text(
-                            "GESTIÓN DE EQUIPO",
+                            text = "GESTIÓN DE EQUIPO",
                             style = MaterialTheme.typography.labelLarge,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, // Color que se adapta al modo
                             modifier = Modifier.padding(start = 20.dp, top = 24.dp, bottom = 8.dp)
                         )
                     }
@@ -127,11 +111,52 @@ fun ProfileScreen(
                     }
                 }
 
+                // --- SECCIÓN DE AJUSTES (AHORA AL FINAL) ---
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "AJUSTES",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, // Adaptativo
+                        modifier = Modifier.padding(start = 20.dp, top = 8.dp, bottom = 8.dp)
+                    )
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Modo Oscuro",
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface // Adaptativo
+                            )
+                            Switch(
+                                checked = isDarkTheme,
+                                onCheckedChange = onThemeToggle,
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                    checkedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            )
+                        }
+                    }
+                }
+
                 item {
                     Spacer(modifier = Modifier.height(32.dp))
                     Button(
                         onClick = onLogout,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFEBEE), contentColor = Color.Red),
+                        // Para el botón de peligro, usamos el esquema de error del tema
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer
+                        ),
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {

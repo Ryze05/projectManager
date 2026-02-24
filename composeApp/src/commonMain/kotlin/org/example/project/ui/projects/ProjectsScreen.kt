@@ -37,7 +37,6 @@ fun ProjectsScreen(
     val state by viewModel.state.collectAsState()
     val tabs = listOf("Activos", "Completados", "Archivados")
 
-    //TODO Optimizar cambios de proyectos entre tabs
     val currentStatus = when (selectedTab) {
         0 -> "active"
         1 -> "completed"
@@ -56,24 +55,24 @@ fun ProjectsScreen(
             if (state.isAdmin) {
                 FloatingActionButton(
                     onClick = { showDialog = true },
-                    containerColor = Color(0xFF2563EB),
-                    contentColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.primary, // <-- Adaptativo
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = CircleShape
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Crear")
                 }
             }
         },
-        containerColor = Color(0xFFF5F6FA)
+        containerColor = MaterialTheme.colorScheme.background // <-- Fondo adaptativo
     ) { padding ->
 
         if (showDialog && state.isAdmin) {
             AlertDialog(
                 onDismissRequest = { showDialog = false },
-                title = { Text("Nuevo Proyecto", fontWeight = FontWeight.Bold) },
+                title = { Text("Nuevo Proyecto", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                 text = {
                     Column {
-                        Text("Introduce el nombre del proyecto:")
+                        Text("Introduce el nombre del proyecto:", color = MaterialTheme.colorScheme.onSurface)
                         Spacer(Modifier.height(8.dp))
                         OutlinedTextField(
                             value = newProjectTitle,
@@ -87,7 +86,7 @@ fun ProjectsScreen(
                 },
                 confirmButton = {
                     Button(
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         onClick = {
                             if (newProjectTitle.isNotBlank()) {
                                 val userId = authRepository.getCurrentUserId()
@@ -104,15 +103,16 @@ fun ProjectsScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showDialog = false }) {
-                        Text("Cancelar", color = Color.Gray)
+                        Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                }
+                },
+                containerColor = MaterialTheme.colorScheme.surface
             )
         }
 
         if (state.isLoading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         } else if (state.error != null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -130,7 +130,8 @@ fun ProjectsScreen(
                 Text(
                     text = "Proyectos",
                     style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -142,7 +143,7 @@ fun ProjectsScreen(
                     indicator = { tabPositions ->
                         TabRowDefaults.SecondaryIndicator(
                             Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                            color = Color(0xFF2563EB)
+                            color = MaterialTheme.colorScheme.primary // <-- Línea indicadora adaptativa
                         )
                     }
                 ) {
@@ -153,7 +154,7 @@ fun ProjectsScreen(
                             text = {
                                 Text(
                                     text = title,
-                                    color = if (selectedTab == index) Color(0xFF2563EB) else Color.Gray,
+                                    color = if (selectedTab == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
                                 )
                             }
@@ -184,26 +185,27 @@ fun ProjectsScreen(
                                     onClick = { showOptions = true },
                                     modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
                                 ) {
-                                    Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = Color.Gray)
+                                    Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
 
                             DropdownMenu(
                                 expanded = showOptions,
-                                onDismissRequest = { showOptions = false }
+                                onDismissRequest = { showOptions = false },
+                                containerColor = MaterialTheme.colorScheme.surface
                             ) {
                                 DropdownMenuItem(
-                                    text = { Text("Configuración") },
-                                    leadingIcon = { Icon(Icons.Default.Settings, null) },
+                                    text = { Text("Configuración", color = MaterialTheme.colorScheme.onSurface) },
+                                    leadingIcon = { Icon(Icons.Default.Settings, null, tint = MaterialTheme.colorScheme.onSurface) },
                                     onClick = {
                                         showOptions = false
                                         showEditDialog = true
                                     }
                                 )
-                                HorizontalDivider()
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                                 DropdownMenuItem(
-                                    text = { Text("Eliminar Proyecto", color = Color.Red) },
-                                    leadingIcon = { Icon(Icons.Default.Delete, null, tint = Color.Red) },
+                                    text = { Text("Eliminar Proyecto", color = MaterialTheme.colorScheme.error) },
+                                    leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) },
                                     onClick = {
                                         showOptions = false
                                         viewModel.deleteProject(project.id!!, userId, currentStatus)
@@ -214,7 +216,7 @@ fun ProjectsScreen(
                             if (showEditDialog) {
                                 AlertDialog(
                                     onDismissRequest = { showEditDialog = false },
-                                    title = { Text("Editar Proyecto", fontWeight = FontWeight.Bold) },
+                                    title = { Text("Editar Proyecto", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                                     text = {
                                         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                             OutlinedTextField(
@@ -226,7 +228,7 @@ fun ProjectsScreen(
                                             )
 
                                             Column {
-                                                Text("Estado", style = MaterialTheme.typography.labelMedium)
+                                                Text("Estado", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
                                                 Spacer(Modifier.height(8.dp))
 
                                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -237,8 +239,9 @@ fun ProjectsScreen(
                                                                 onClick = { editedStatus = key },
                                                                 label = { Text(label) },
                                                                 colors = FilterChipDefaults.filterChipColors(
-                                                                    selectedContainerColor = Color(0xFFDBEAFE),
-                                                                    selectedLabelColor = Color(0xFF2563EB)
+                                                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                                                                 )
                                                             )
                                                         }
@@ -258,15 +261,17 @@ fun ProjectsScreen(
                                                 )
                                                 showEditDialog = false
                                             },
-                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB))
-                                        ) { Text("Guardar") }
+                                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                        ) { Text("Guardar", color = MaterialTheme.colorScheme.onPrimary) }
                                     },
                                     dismissButton = {
-                                        TextButton(onClick = { showEditDialog = false }) { Text("Cancelar") }
-                                    }
+                                        TextButton(onClick = { showEditDialog = false }) {
+                                            Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        }
+                                    },
+                                    containerColor = MaterialTheme.colorScheme.surface
                                 )
                             }
-
                         }
                     }
                 }

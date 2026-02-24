@@ -36,6 +36,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -138,12 +139,8 @@ fun ProjectDetailScreen(
         )
 
         val systemTz = TimeZone.currentSystemDefault()
-
         val instant = localDateTime.toInstant(systemTz)
-
-        val result = instant.toString()
-
-        return result
+        return instant.toString()
     }
 
     Scaffold(
@@ -153,12 +150,13 @@ fun ProjectDetailScreen(
                 title = {
                     Text(
                         text = state.projectName,
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = MaterialTheme.colorScheme.onSurface)
                     }
                 },
                 actions = {
@@ -167,33 +165,33 @@ fun ProjectDetailScreen(
                             Icon(
                                 imageVector = Icons.Default.GroupAdd,
                                 contentDescription = "Invitar miembro",
-                                tint = Color(0xFF2563EB)
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF5F6FA))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
         floatingActionButton = {
             if (state.isAdmin) {
                 FloatingActionButton(
                     onClick = { showAddSectionDialog = true },
-                    containerColor = Color(0xFF2563EB),
-                    contentColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = CircleShape
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Crear")
                 }
             }
         },
-        containerColor = Color(0xFFF5F6FA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
 
         if (showAddSectionDialog && state.isAdmin) {
             AlertDialog(
                 onDismissRequest = { showAddSectionDialog = false },
-                title = { Text("Nueva Sección", fontWeight = FontWeight.Bold) },
+                title = { Text("Nueva Sección", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         OutlinedTextField(
@@ -205,7 +203,7 @@ fun ProjectDetailScreen(
                         )
 
                         Column {
-                            Text("Prioridad", style = MaterialTheme.typography.labelMedium)
+                            Text("Prioridad", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
                             Spacer(Modifier.height(8.dp))
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -218,11 +216,16 @@ fun ProjectDetailScreen(
                                         label = { Text(priority.replaceFirstChar { it.uppercase() }) },
                                         colors = FilterChipDefaults.filterChipColors(
                                             selectedContainerColor = when (priority) {
-                                                "alta" -> Color(0xFFFEE2E2)
-                                                "media" -> Color(0xFFFEF3C7)
-                                                else -> Color(0xFFDCFCE7)
+                                                "alta" -> MaterialTheme.colorScheme.errorContainer
+                                                "media" -> MaterialTheme.colorScheme.tertiaryContainer
+                                                else -> MaterialTheme.colorScheme.secondaryContainer
                                             },
-                                            selectedLabelColor = Color.Black
+                                            selectedLabelColor = when (priority) {
+                                                "alta" -> MaterialTheme.colorScheme.onErrorContainer
+                                                "media" -> MaterialTheme.colorScheme.onTertiaryContainer
+                                                else -> MaterialTheme.colorScheme.onSecondaryContainer
+                                            },
+                                            labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     )
                                 }
@@ -239,19 +242,23 @@ fun ProjectDetailScreen(
                                 selectedPriority = "media"
                                 showAddSectionDialog = false
                             }
-                        }
-                    ) { Text("Crear") }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) { Text("Crear", color = MaterialTheme.colorScheme.onPrimary) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showAddSectionDialog = false }) { Text("Cancelar") }
-                }
+                    TextButton(onClick = { showAddSectionDialog = false }) {
+                        Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.surface
             )
         }
 
         if (showAddTaskDialog && state.isAdmin) {
             AlertDialog(
                 onDismissRequest = { showAddTaskDialog = false },
-                title = { Text("Nueva Tarea", fontWeight = FontWeight.Bold) },
+                title = { Text("Nueva Tarea", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         OutlinedTextField(
@@ -271,14 +278,15 @@ fun ProjectDetailScreen(
                             onClick = { showDatePicker = true },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(Icons.Default.Add, null)
+                            Icon(Icons.Default.Add, null, tint = MaterialTheme.colorScheme.onSurface)
                             Spacer(Modifier.width(8.dp))
-                            Text(datePickerState.selectedDateMillis?.let {
-                                val date = Instant.fromEpochMilliseconds(it).toLocalDateTime(
-                                    TimeZone.currentSystemDefault()
-                                )
-                                "${date.dayOfMonth}/${date.monthNumber}/${date.year}"
-                            } ?: "Fecha de entrega")
+                            Text(
+                                text = datePickerState.selectedDateMillis?.let {
+                                    val date = Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault())
+                                    "${date.dayOfMonth}/${date.monthNumber}/${date.year}"
+                                } ?: "Fecha de entrega",
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         }
 
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -286,36 +294,55 @@ fun ProjectDetailScreen(
                                 FilterChip(
                                     selected = newTaskPriority == priority,
                                     onClick = { newTaskPriority = priority },
-                                    label = { Text(priority.capitalize()) }
+                                    label = { Text(priority.replaceFirstChar { it.uppercase() }) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = when (priority) {
+                                            "alta" -> MaterialTheme.colorScheme.errorContainer
+                                            "media" -> MaterialTheme.colorScheme.tertiaryContainer
+                                            else -> MaterialTheme.colorScheme.secondaryContainer
+                                        },
+                                        selectedLabelColor = when (priority) {
+                                            "alta" -> MaterialTheme.colorScheme.onErrorContainer
+                                            "media" -> MaterialTheme.colorScheme.onTertiaryContainer
+                                            else -> MaterialTheme.colorScheme.onSecondaryContainer
+                                        },
+                                        labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 )
                             }
                         }
                     }
                 },
                 confirmButton = {
-                    Button(onClick = {
-                        if (newTaskTitle.isNotBlank()) {
-                            val combinedIsoDate = combineDateTimeToIso(
-                                datePickerState.selectedDateMillis,
-                                timePickerState.hour,
-                                timePickerState.minute
-                            )
+                    Button(
+                        onClick = {
+                            if (newTaskTitle.isNotBlank()) {
+                                val combinedIsoDate = combineDateTimeToIso(
+                                    datePickerState.selectedDateMillis,
+                                    timePickerState.hour,
+                                    timePickerState.minute
+                                )
 
-                            viewModel.addTask(
-                                title = newTaskTitle,
-                                sectionId = selectedSectionId!!,
-                                priority = newTaskPriority,
-                                description = newTaskDescription,
-                                dueDate = combinedIsoDate
-                            )
-                            showAddTaskDialog = false
-                            newTaskTitle = ""; newTaskDescription = ""
-                        }
-                    }) { Text("Guardar") }
+                                viewModel.addTask(
+                                    title = newTaskTitle,
+                                    sectionId = selectedSectionId!!,
+                                    priority = newTaskPriority,
+                                    description = newTaskDescription,
+                                    dueDate = combinedIsoDate
+                                )
+                                showAddTaskDialog = false
+                                newTaskTitle = ""; newTaskDescription = ""
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) { Text("Guardar", color = MaterialTheme.colorScheme.onPrimary) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showAddTaskDialog = false }) { Text("Cancelar") }
-                }
+                    TextButton(onClick = { showAddTaskDialog = false }) {
+                        Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.surface
             )
         }
 
@@ -326,8 +353,9 @@ fun ProjectDetailScreen(
                     TextButton(onClick = {
                         showDatePicker = false
                         showTimePicker = true
-                    }) { Text("Siguiente") }
-                }
+                    }) { Text("Siguiente", color = MaterialTheme.colorScheme.primary) }
+                },
+                colors = DatePickerDefaults.colors(containerColor = MaterialTheme.colorScheme.surface)
             ) { DatePicker(state = datePickerState) }
         }
 
@@ -335,12 +363,11 @@ fun ProjectDetailScreen(
             AlertDialog(
                 onDismissRequest = { showTimePicker = false },
                 confirmButton = {
-                    TextButton(onClick = { showTimePicker = false }) { Text("OK") }
+                    TextButton(onClick = { showTimePicker = false }) { Text("OK", color = MaterialTheme.colorScheme.primary) }
                 },
-                title = { Text("Selecciona la hora") },
-                text = {
-                    TimePicker(state = timePickerState)
-                }
+                title = { Text("Selecciona la hora", color = MaterialTheme.colorScheme.onSurface) },
+                text = { TimePicker(state = timePickerState) },
+                containerColor = MaterialTheme.colorScheme.surface
             )
         }
 
@@ -350,18 +377,19 @@ fun ProjectDetailScreen(
             AlertDialog(
                 onDismissRequest = { showInviteDialog = false },
                 shape = RoundedCornerShape(28.dp),
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.surface,
                 title = {
                     Column {
                         Text(
                             text = "Gestionar equipo",
                             style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.ExtraBold
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "${state.projectMembers.size} miembros activos",
                             style = MaterialTheme.typography.labelMedium,
-                            color = Color(0xFF2563EB),
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -371,13 +399,13 @@ fun ProjectDetailScreen(
                         Text(
                             text = "Añade o elimina miembros de este proyecto.",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
 
                         if (state.allUsers.isEmpty()) {
                             Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.primary)
                             }
                         } else {
                             LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -393,8 +421,8 @@ fun ProjectDetailScreen(
                                             }
                                         },
                                         shape = RoundedCornerShape(16.dp),
-                                        color = if (isAlreadyMember) Color(0xFFF1F5F9) else Color(0xFFF8FAFC),
-                                        border = BorderStroke(1.dp, if (isAlreadyMember) Color.Transparent else Color(0xFFE2E8F0))
+                                        color = if (isAlreadyMember) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
+                                        border = BorderStroke(1.dp, if (isAlreadyMember) Color.Transparent else MaterialTheme.colorScheme.outline)
                                     ) {
                                         Row(
                                             modifier = Modifier.fillMaxWidth().padding(12.dp),
@@ -403,14 +431,14 @@ fun ProjectDetailScreen(
                                             Surface(
                                                 modifier = Modifier.size(40.dp),
                                                 shape = CircleShape,
-                                                color = if (isAlreadyMember) Color(0xFF94A3B8) else Color(0xFFDBEAFE)
+                                                color = if (isAlreadyMember) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f) else MaterialTheme.colorScheme.primaryContainer
                                             ) {
                                                 Box(contentAlignment = Alignment.Center) {
                                                     Text(
                                                         text = user.fullName.take(1).uppercase(),
                                                         style = MaterialTheme.typography.titleMedium,
                                                         fontWeight = FontWeight.Bold,
-                                                        color = if (isAlreadyMember) Color.White else Color(0xFF2563EB)
+                                                        color = if (isAlreadyMember) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimaryContainer
                                                     )
                                                 }
                                             }
@@ -422,18 +450,18 @@ fun ProjectDetailScreen(
                                                     text = user.fullName,
                                                     style = MaterialTheme.typography.bodyLarge,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = if (isAlreadyMember) Color.Gray else Color.Black
+                                                    color = if (isAlreadyMember) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
                                                 )
                                                 Text(
                                                     text = user.email,
                                                     style = MaterialTheme.typography.labelSmall,
-                                                    color = Color.Gray
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
                                             }
 
                                             if (isAlreadyMember) {
                                                 Surface(
-                                                    color = Color(0xFFE2E8F0),
+                                                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
                                                     shape = RoundedCornerShape(8.dp)
                                                 ) {
                                                     Row(
@@ -444,17 +472,17 @@ fun ProjectDetailScreen(
                                                             text = "Asignado",
                                                             style = MaterialTheme.typography.labelSmall,
                                                             fontWeight = FontWeight.Bold,
-                                                            color = Color.DarkGray
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                                         )
                                                         Spacer(Modifier.width(4.dp))
-                                                        Icon(Icons.Default.Close, null, Modifier.size(14.dp), tint = Color.Red)
+                                                        Icon(Icons.Default.Close, null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.error)
                                                     }
                                                 }
                                             } else {
                                                 Icon(
                                                     imageVector = Icons.Default.Add,
                                                     contentDescription = null,
-                                                    tint = Color(0xFF2563EB),
+                                                    tint = MaterialTheme.colorScheme.primary,
                                                     modifier = Modifier.size(20.dp)
                                                 )
                                             }
@@ -467,7 +495,7 @@ fun ProjectDetailScreen(
                 },
                 confirmButton = {
                     TextButton(onClick = { showInviteDialog = false }) {
-                        Text("Listo", fontWeight = FontWeight.Bold)
+                        Text("Listo", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
                 }
             )
@@ -475,7 +503,7 @@ fun ProjectDetailScreen(
 
         if (state.isLoading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Color(0xFF2563EB))
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         } else if (state.error != null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -517,13 +545,14 @@ fun ProjectDetailScreen(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Buscar tareas...") },
-                        leadingIcon = { Icon(Icons.Default.Search, null) },
+                        placeholder = { Text("Buscar tareas...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                        leadingIcon = { Icon(Icons.Default.Search, null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFFF1F5F9),
-                            unfocusedContainerColor = Color(0xFFF1F5F9),
-                            unfocusedBorderColor = Color.Transparent
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary
                         )
                     )
                 }
@@ -534,7 +563,7 @@ fun ProjectDetailScreen(
                             Modifier.fillMaxWidth().padding(top = 40.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("No se encontraron tareas", color = Color.Gray)
+                            Text("No se encontraron tareas", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -566,7 +595,7 @@ fun ProjectDetailScreen(
                                     Icon(
                                         imageVector = Icons.Default.Add,
                                         contentDescription = "Añadir tarea",
-                                        tint = Color(0xFF2563EB)
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
                                 Spacer(Modifier.width(8.dp))
@@ -580,16 +609,16 @@ fun ProjectDetailScreen(
                                     text = it.name,
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E293B)
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
 
                                 Spacer(Modifier.width(12.dp))
 
                                 Surface(
                                     color = when (it.priority.lowercase()) {
-                                        "alta" -> Color(0xFFFEE2E2)
-                                        "media" -> Color(0xFFFEF3C7)
-                                        else -> Color(0xFFDCFCE7)
+                                        "alta" -> MaterialTheme.colorScheme.errorContainer
+                                        "media" -> MaterialTheme.colorScheme.tertiaryContainer
+                                        else -> MaterialTheme.colorScheme.secondaryContainer
                                     },
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
@@ -599,9 +628,9 @@ fun ProjectDetailScreen(
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = when (it.priority.lowercase()) {
-                                            "alta" -> Color(0xFFB91C1C)
-                                            "media" -> Color(0xFFB45309)
-                                            else -> Color(0xFF15803D)
+                                            "alta" -> MaterialTheme.colorScheme.onErrorContainer
+                                            "media" -> MaterialTheme.colorScheme.onTertiaryContainer
+                                            else -> MaterialTheme.colorScheme.onSecondaryContainer
                                         }
                                     )
                                 }
@@ -616,29 +645,28 @@ fun ProjectDetailScreen(
                                         Icon(
                                             imageVector = Icons.Default.MoreVert,
                                             contentDescription = "Opciones",
-                                            tint = Color.LightGray,
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.size(20.dp)
                                         )
                                     }
 
                                     DropdownMenu(
                                         expanded = showSectionOptions,
-                                        onDismissRequest = { showSectionOptions = false }
+                                        onDismissRequest = { showSectionOptions = false },
+                                        containerColor = MaterialTheme.colorScheme.surface
                                     ) {
                                         DropdownMenuItem(
-                                            text = { Text("Editar sección") },
+                                            text = { Text("Editar sección", color = MaterialTheme.colorScheme.onSurface) },
                                             onClick = {
                                                 showSectionOptions = false
                                                 showEditSectionDialog = true
                                             }
                                         )
                                         DropdownMenuItem(
-                                            text = { Text("Eliminar sección", color = Color.Red) },
+                                            text = { Text("Eliminar sección", color = MaterialTheme.colorScheme.error) },
                                             onClick = {
                                                 showSectionOptions = false
-                                                it.id?.let { id ->
-                                                    viewModel.deleteSection(id)
-                                                }
+                                                it.id?.let { id -> viewModel.deleteSection(id) }
                                             }
                                         )
                                     }
@@ -649,7 +677,7 @@ fun ProjectDetailScreen(
                         if (showEditSectionDialog) {
                             AlertDialog(
                                 onDismissRequest = { showEditSectionDialog = false },
-                                title = { Text("Editar Sección", fontWeight = FontWeight.Bold) },
+                                title = { Text("Editar Sección", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                                 text = {
                                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                         OutlinedTextField(
@@ -660,7 +688,7 @@ fun ProjectDetailScreen(
                                             shape = RoundedCornerShape(12.dp)
                                         )
                                         Column {
-                                            Text("Prioridad", style = MaterialTheme.typography.labelMedium)
+                                            Text("Prioridad", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
                                             Spacer(Modifier.height(8.dp))
                                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                                 priorities.forEach { priority ->
@@ -670,9 +698,14 @@ fun ProjectDetailScreen(
                                                         label = { Text(priority.replaceFirstChar { it.uppercase() }) },
                                                         colors = FilterChipDefaults.filterChipColors(
                                                             selectedContainerColor = when (priority) {
-                                                                "alta" -> Color(0xFFFEE2E2)
-                                                                "media" -> Color(0xFFFEF3C7)
-                                                                else -> Color(0xFFDCFCE7)
+                                                                "alta" -> MaterialTheme.colorScheme.errorContainer
+                                                                "media" -> MaterialTheme.colorScheme.tertiaryContainer
+                                                                else -> MaterialTheme.colorScheme.secondaryContainer
+                                                            },
+                                                            selectedLabelColor = when (priority) {
+                                                                "alta" -> MaterialTheme.colorScheme.onErrorContainer
+                                                                "media" -> MaterialTheme.colorScheme.onTertiaryContainer
+                                                                else -> MaterialTheme.colorScheme.onSecondaryContainer
                                                             }
                                                         )
                                                     )
@@ -684,19 +717,18 @@ fun ProjectDetailScreen(
                                 confirmButton = {
                                     Button(
                                         onClick = {
-                                            it.id?.let { id ->
-                                                viewModel.updateSection(id, editName, editPriority)
-                                            }
+                                            it.id?.let { id -> viewModel.updateSection(id, editName, editPriority) }
                                             showEditSectionDialog = false
                                         },
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB))
-                                    ) { Text("Guardar") }
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                    ) { Text("Guardar", color = MaterialTheme.colorScheme.onPrimary) }
                                 },
                                 dismissButton = {
                                     TextButton(onClick = { showEditSectionDialog = false }) {
-                                        Text("Cancelar", color = Color.Gray)
+                                        Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
-                                }
+                                },
+                                containerColor = MaterialTheme.colorScheme.surface
                             )
                         }
                     }
@@ -706,7 +738,6 @@ fun ProjectDetailScreen(
                         var showTaskOptions by remember { mutableStateOf(false) }
                         var showEditTaskDialog by remember { mutableStateOf(false) }
 
-                        // El estado de los diálogos se vincula a la tarea actual
                         var editTaskTitle by remember { mutableStateOf(task.title) }
                         var editTaskDescription by remember { mutableStateOf(task.description ?: "") }
                         var editTaskPriority by remember { mutableStateOf(task.priority) }
@@ -719,23 +750,20 @@ fun ProjectDetailScreen(
                                 .animateItem()
                                 .clickable { onTaskClick(task.id!!, projectName) },
                             colors = CardDefaults.cardColors(
-                                containerColor = if (task.isCompleted) Color(0xFFF1F5F9) else Color.White
+                                containerColor = if (task.isCompleted) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
                             ),
                             shape = RoundedCornerShape(16.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = if (task.isCompleted) 0.dp else 2.dp),
-                            border = if (task.isCompleted) BorderStroke(1.dp, Color(0xFFE2E8F0)) else null
+                            border = if (task.isCompleted) BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)) else null
                         ) {
                             Row(
                                 modifier = Modifier.padding(16.dp).fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // --- NUEVO CHECKBOX EN LUGAR DEL ICONO DE TAREA ---
                                 IconButton(
                                     onClick = {
                                         if (task.isCompleted && !state.isAdmin) {
-                                            scope.launch {
-                                                snackbarHostState.showSnackbar("Solo administradores pueden reabrir tareas")
-                                            }
+                                            scope.launch { snackbarHostState.showSnackbar("Solo administradores pueden reabrir tareas") }
                                         } else {
                                             viewModel.toggleTaskStatus(task.id!!, !task.isCompleted)
                                         }
@@ -745,7 +773,7 @@ fun ProjectDetailScreen(
                                     Icon(
                                         imageVector = if (task.isCompleted) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
                                         contentDescription = "Marcar tarea",
-                                        tint = if (task.isCompleted) Color(0xFF15803D) else Color(0xFF94A3B8),
+                                        tint = if (task.isCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(28.dp)
                                     )
                                 }
@@ -757,20 +785,17 @@ fun ProjectDetailScreen(
                                         Text(
                                             text = task.title,
                                             style = MaterialTheme.typography.bodyLarge.copy(
-                                                textDecoration = if (task.isCompleted)
-                                                    TextDecoration.LineThrough
-                                                else
-                                                    TextDecoration.None
+                                                textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
                                             ),
                                             fontWeight = FontWeight.Bold,
-                                            color = if (task.isCompleted) Color.Gray else Color.Black
+                                            color = if (task.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
                                         )
 
                                         Spacer(Modifier.width(8.dp))
 
                                         if (task.isCompleted) {
                                             Surface(
-                                                color = Color(0xFFDCFCE7),
+                                                color = MaterialTheme.colorScheme.primaryContainer,
                                                 shape = RoundedCornerShape(8.dp)
                                             ) {
                                                 Text(
@@ -778,7 +803,7 @@ fun ProjectDetailScreen(
                                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                                     style = MaterialTheme.typography.labelSmall,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = Color(0xFF15803D)
+                                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                                 )
                                             }
                                         }
@@ -787,28 +812,29 @@ fun ProjectDetailScreen(
                                     Text(
                                         text = "Prioridad: ${task.priority.replaceFirstChar { it.uppercase() }}",
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = Color.Gray
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
 
                                 if (state.isAdmin) {
                                     Box {
                                         IconButton(onClick = { showTaskOptions = true }) {
-                                            Icon(Icons.Default.MoreVert, null, tint = Color.LightGray)
+                                            Icon(Icons.Default.MoreVert, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                         DropdownMenu(
                                             expanded = showTaskOptions,
-                                            onDismissRequest = { showTaskOptions = false }
+                                            onDismissRequest = { showTaskOptions = false },
+                                            containerColor = MaterialTheme.colorScheme.surface
                                         ) {
                                             DropdownMenuItem(
-                                                text = { Text("Editar tarea") },
+                                                text = { Text("Editar tarea", color = MaterialTheme.colorScheme.onSurface) },
                                                 onClick = {
                                                     showTaskOptions = false
                                                     showEditTaskDialog = true
                                                 }
                                             )
                                             DropdownMenuItem(
-                                                text = { Text("Eliminar tarea", color = Color.Red) },
+                                                text = { Text("Eliminar tarea", color = MaterialTheme.colorScheme.error) },
                                                 onClick = {
                                                     showTaskOptions = false
                                                     viewModel.deleteTask(task.id!!)
@@ -820,11 +846,10 @@ fun ProjectDetailScreen(
                             }
                         }
 
-                        // --- DIÁLOGO DE EDICIÓN ---
                         if (showEditTaskDialog) {
                             AlertDialog(
                                 onDismissRequest = { showEditTaskDialog = false },
-                                title = { Text("Editar Tarea", fontWeight = FontWeight.Bold) },
+                                title = { Text("Editar Tarea", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                                 text = {
                                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                         OutlinedTextField(
@@ -842,18 +867,30 @@ fun ProjectDetailScreen(
                                             shape = RoundedCornerShape(12.dp)
                                         )
 
-                                        Text("Prioridad", style = MaterialTheme.typography.labelMedium)
+                                        Text("Prioridad", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
                                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                             priorities.forEach { priority ->
                                                 FilterChip(
                                                     selected = editTaskPriority == priority,
                                                     onClick = { editTaskPriority = priority },
-                                                    label = { Text(priority.capitalize()) }
+                                                    label = { Text(priority.replaceFirstChar { it.uppercase() }) },
+                                                    colors = FilterChipDefaults.filterChipColors(
+                                                        selectedContainerColor = when (priority) {
+                                                            "alta" -> MaterialTheme.colorScheme.errorContainer
+                                                            "media" -> MaterialTheme.colorScheme.tertiaryContainer
+                                                            else -> MaterialTheme.colorScheme.secondaryContainer
+                                                        },
+                                                        selectedLabelColor = when (priority) {
+                                                            "alta" -> MaterialTheme.colorScheme.onErrorContainer
+                                                            "media" -> MaterialTheme.colorScheme.onTertiaryContainer
+                                                            else -> MaterialTheme.colorScheme.onSecondaryContainer
+                                                        }
+                                                    )
                                                 )
                                             }
                                         }
 
-                                        Text("Estado de la tarea", style = MaterialTheme.typography.labelMedium)
+                                        Text("Estado de la tarea", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
                                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                             FilterChip(
                                                 selected = !editIsCompleted,
@@ -871,8 +908,8 @@ fun ProjectDetailScreen(
                                                     { Icon(Icons.Default.Check, null, Modifier.size(18.dp)) }
                                                 } else null,
                                                 colors = FilterChipDefaults.filterChipColors(
-                                                    selectedContainerColor = Color(0xFFDCFCE7),
-                                                    selectedLabelColor = Color(0xFF15803D)
+                                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
                                                 )
                                             )
                                         }
@@ -893,12 +930,15 @@ fun ProjectDetailScreen(
                                                 showEditTaskDialog = false
                                             }
                                         },
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB))
-                                    ) { Text("Guardar") }
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                    ) { Text("Guardar", color = MaterialTheme.colorScheme.onPrimary) }
                                 },
                                 dismissButton = {
-                                    TextButton(onClick = { showEditTaskDialog = false }) { Text("Cancelar") }
-                                }
+                                    TextButton(onClick = { showEditTaskDialog = false }) {
+                                        Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                },
+                                containerColor = MaterialTheme.colorScheme.surface
                             )
                         }
                     }
