@@ -1,21 +1,12 @@
 package org.example.project
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -23,7 +14,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import kotlinx.coroutines.launch
 import org.example.project.domain.models.Project
 import org.example.project.repository.AuthRepository
 import org.example.project.repository.ProfileRepository
@@ -81,8 +71,6 @@ fun App(
         val viewModelProfile = remember { ProfileViewModel(authRepository, profileRepository) }
 
         // --- ESTADOS PARA EL MENÚ DE CHAT ---
-        val coroutineScope = rememberCoroutineScope()
-        var showChatMenu by remember { mutableStateOf(false) }
         var chatProjectsList by remember { mutableStateOf<List<Project>>(emptyList()) }
 
         // --- 1. LÓGICA DE SESIÓN PERSISTENTE ---
@@ -113,37 +101,36 @@ fun App(
                 CircularProgressIndicator()
             }
         } else {
-
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
                 containerColor = MaterialTheme.colorScheme.background,
                 bottomBar = {
-                    if (bottomBarScreens.any { it.route == currentRoute } || currentRoute?.startsWith("tasks_screen") == true) {
+                    if (bottomBarScreens.any {
+                            currentRoute == it.route || currentRoute == it.targetRoute ||
+                                    currentRoute?.startsWith("tasks_screen") == true
+                        }) {
                         NavigationBar(
                             containerColor = MaterialTheme.colorScheme.surface,
                             tonalElevation = 8.dp
                         ) {
                             bottomBarScreens.forEach { screen ->
-                                // Comprobamos si el botón actual es el de la Agenda
-                                val isTasksScreen = screen == Screen.Tasks
 
-                                // Mantenemos el icono encendido si estamos en la agenda
-                                val isSelected = if (isTasksScreen) {
-                                    currentRoute?.startsWith("tasks_screen") == true || currentRoute == screen.route
-                                } else {
-                                    currentRoute == screen.route
-                                }
+                                val isSelected = currentRoute == screen.route ||
+                                        currentRoute == screen.targetRoute ||
+                                        (screen == Screen.Tasks && currentRoute?.startsWith("tasks_screen") == true)
 
                                 NavigationBarItem(
                                     icon = { Icon(screen.icon, contentDescription = screen.title) },
                                     label = { Text(screen.title) },
                                     selected = isSelected,
                                     onClick = {
-                                        // AQUI ESTÁ LA MAGIA: Si pulsamos en Agenda, forzamos la ruta con el ID 0
-                                        val targetRoute = if (isTasksScreen) "tasks_screen/0" else screen.route
-
-                                        navController.navigate(targetRoute) {
-                                            popUpTo(Screen.Home.route) { saveState = true }
+                                        navController.navigate(screen.targetRoute) {
+                                            val baseRoute = Screen.Home.route
+                                            if (screen == Screen.Home) {
+                                                popUpTo(baseRoute) { inclusive = true }
+                                            } else {
+                                                popUpTo(baseRoute) { saveState = true }
+                                            }
                                             launchSingleTop = true
                                             restoreState = true
                                         }
@@ -179,7 +166,11 @@ fun App(
                     }
 
                     composable(Screen.Home.route) {
-                        HomeScreen(viewModel = viewModelHome, navController = navController, authRepository = authRepository)
+                        HomeScreen(
+                            viewModel = viewModelHome,
+                            navController = navController,
+                            authRepository = authRepository
+                        )
                     }
 
                     composable(Screen.Projects.route) {
@@ -191,10 +182,8 @@ fun App(
                     }
 
                     composable(Screen.Profile.route) {
-                        // Creamos un disparador vacío por defecto
                         var triggerPicker: () -> Unit = {}
 
-                        // Si estamos en Android y nos han pasado la función, la configuramos
                         onPickImage?.let {
                             triggerPicker = it { bytes ->
                                 val userId = authRepository.getCurrentUserId()
@@ -211,7 +200,7 @@ fun App(
                                 viewModelAuth.logout()
                                 navController.navigate(Screen.Login.route) { popUpTo(0) }
                             },
-                            onPickImage = triggerPicker // Pásale la función a la pantalla
+                            onPickImage = triggerPicker
                         )
                     }
 
@@ -270,7 +259,15 @@ fun App(
                         )
                     }
 
-                    // ¡AQUI ESTABA EL ERROR DEL CRASH! La ruta debe ser explícita con {sectionId}
+                    // Alias para evitar crash si algo navega a "tasks" directamente
+                    composable(Screen.Tasks.route) {
+                        LaunchedEffect(Unit) {
+                            navController.navigate("tasks_screen/0") {
+                                popUpTo(Screen.Tasks.route) { inclusive = true }
+                            }
+                        }
+                    }
+
                     composable(
                         route = "tasks_screen/{sectionId}",
                         arguments = listOf(navArgument("sectionId") { type = NavType.LongType })
