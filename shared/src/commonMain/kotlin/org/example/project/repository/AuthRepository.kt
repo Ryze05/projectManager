@@ -14,6 +14,7 @@ class AuthRepository() {
 
     suspend fun signUp(email: String, password: String, fullName: String): Result<Unit> {
         return runCatching {
+            println("AUTH_DEBUG signUp() → email=$email")
             SupabaseClient.client.auth.signUpWith(Email) {
                 this.email = email
                 this.password = password
@@ -21,15 +22,24 @@ class AuthRepository() {
                     put("full_name", fullName)
                 }
             }
+            println("AUTH_DEBUG signUp() → SUCCESS")
+        }.onFailure { error ->
+            println("AUTH_DEBUG signUp() → ERROR: ${error::class.simpleName}: ${error.message}")
+            println("AUTH_DEBUG signUp() → CAUSE: ${error.cause?.message}")
         }
     }
 
     suspend fun signIn(email: String, pass: String): Result<Unit> {
         return runCatching {
+            println("AUTH_DEBUG signIn() → email=$email")
             SupabaseClient.client.auth.signInWith(Email) {
                 this.email = email
                 this.password = pass
             }
+            println("AUTH_DEBUG signIn() → SUCCESS")
+        }.onFailure { error ->
+            println("AUTH_DEBUG signIn() → ERROR: ${error::class.simpleName}: ${error.message}")
+            println("AUTH_DEBUG signIn() → CAUSE: ${error.cause?.message}")
         }
     }
 

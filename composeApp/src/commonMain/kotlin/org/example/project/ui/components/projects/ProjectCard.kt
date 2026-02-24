@@ -29,11 +29,20 @@ import androidx.navigation.NavController
 import org.example.project.domain.models.Project
 import org.example.project.ui.navigation.Screen
 import org.example.project.ui.projects.ProjectUiState
+import org.example.project.ui.theme.projectColors
 
 @Composable
 fun ProjectCard(project: Project, navController: NavController) {
     val uiState = remember(project) { ProjectUiState(project) }
     val (statusTextColor, statusBgColor) = uiState.statusColors
+
+    val baseColor = remember(project.id) {
+        val id = project.id ?: 0L
+        projectColors[(id % projectColors.size).toInt()]
+    }
+
+    val softColor = remember(baseColor) { baseColor.copy(alpha = 0.2f) }
+
     val progress = remember(project) {
         if (project.totalTasks > 0) {
             project.completedTasks.toFloat() / project.totalTasks.toFloat()
@@ -44,16 +53,19 @@ fun ProjectCard(project: Project, navController: NavController) {
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier.clickable{
-            navController.navigate(Screen.ProjectDetails.createRoute(project.id, project.title))
-        }
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable {
+                navController.navigate(Screen.ProjectDetails.createRoute(project.id, project.title))
+            }
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp)
-                    .background(uiState.headerColor)
+                    .background(softColor)
             )
 
             Column(modifier = Modifier.padding(16.dp)) {
@@ -63,15 +75,16 @@ fun ProjectCard(project: Project, navController: NavController) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = uiState.title,
-                        style = MaterialTheme.typography.titleMedium,
+                        text = project.title,
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        color = Color(0xFF1F2937)
                     )
 
                     Surface(
                         color = statusBgColor,
-                        shape = RoundedCornerShape(4.dp)
+                        shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
                             text = uiState.status.uppercase(),
@@ -83,14 +96,35 @@ fun ProjectCard(project: Project, navController: NavController) {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
+
                 Text(
-                    text = "Creado el: ${uiState.displayDate}",
+                    text = "Creado el: ${project.createdAt?.take(10) ?: "N/A"}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Progreso",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = "${(progress * 100).toInt()}%",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = baseColor
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 LinearProgressIndicator(
                     progress = { progress },
@@ -98,8 +132,8 @@ fun ProjectCard(project: Project, navController: NavController) {
                         .fillMaxWidth()
                         .height(8.dp)
                         .clip(RoundedCornerShape(4.dp)),
-                    color = if (progress >= 1f) Color(0xFF22C55E) else Color(0xFF2563EB),
-                    trackColor = Color(0xFFE0E0E0),
+                    color = if (progress >= 1f) Color(0xFF22C55E) else baseColor,
+                    trackColor = Color(0xFFF3F4F6),
                 )
             }
         }

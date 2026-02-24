@@ -10,7 +10,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Comment
+import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -75,7 +78,6 @@ fun HomeScreen(
                         .padding(horizontal = 20.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    Spacer(modifier = Modifier.height(20.dp))
 
                     HomeHeader(state.userName, state.avatarUrl,false)
 
@@ -94,11 +96,30 @@ fun HomeScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
-                            Text(
-                                text = if (state.isAdmin) "Panel de Administrador activo" else "Sigue así, el trabajo duro da frutos.",
-                                color = Color.White,
-                                style = MaterialTheme.typography.bodySmall
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = if (state.isAdmin) "Gestionando el éxito del equipo" else "Sigue así, el trabajo duro da frutos.",
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                if (state.isAdmin) {
+                                    Spacer(Modifier.width(4.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.VerifiedUser,
+                                        contentDescription = null,
+                                        tint = Color.White.copy(alpha = 0.7f),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                } else {
+                                    Spacer(Modifier.width(4.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.TrendingUp,
+                                        contentDescription = null,
+                                        tint = Color.White.copy(alpha = 0.7f),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+                            }
                         }
                     }
 
