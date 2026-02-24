@@ -30,6 +30,7 @@ import org.example.project.repository.ProfileRepository
 import org.example.project.repository.ProjectRepository
 import org.example.project.repository.SectionRepository
 import org.example.project.repository.TaskRepository
+import org.example.project.ui.Tasks.TasksViewModel
 import org.example.project.ui.auth.AuthViewModel
 import org.example.project.ui.auth.LoginScreen
 import org.example.project.ui.auth.RegisterScreen
@@ -46,6 +47,7 @@ import org.example.project.ui.projectDetail.ProjectDetailsViewModel
 import org.example.project.ui.projects.ProjectViewModel
 import org.example.project.ui.taskDetail.TaskDetailScreen
 import org.example.project.ui.taskDetail.TaskDetailViewModel
+import org.example.project.ui.tasks.TasksScreen
 import org.example.project.ui.theme.ProjectManagerTheme
 
 @Composable
@@ -116,19 +118,31 @@ fun App(
                 modifier = Modifier.fillMaxSize(),
                 containerColor = MaterialTheme.colorScheme.background,
                 bottomBar = {
-                    // Solo mostramos la barra si estamos en una pantalla principal
-                    if (bottomBarScreens.any { it.route == currentRoute }) {
+                    if (bottomBarScreens.any { it.route == currentRoute } || currentRoute?.startsWith("tasks_screen") == true) {
                         NavigationBar(
                             containerColor = MaterialTheme.colorScheme.surface,
                             tonalElevation = 8.dp
                         ) {
                             bottomBarScreens.forEach { screen ->
+                                // Comprobamos si el botón actual es el de la Agenda
+                                val isTasksScreen = screen == Screen.Tasks
+
+                                // Mantenemos el icono encendido si estamos en la agenda
+                                val isSelected = if (isTasksScreen) {
+                                    currentRoute?.startsWith("tasks_screen") == true || currentRoute == screen.route
+                                } else {
+                                    currentRoute == screen.route
+                                }
+
                                 NavigationBarItem(
                                     icon = { Icon(screen.icon, contentDescription = screen.title) },
                                     label = { Text(screen.title) },
-                                    selected = currentRoute == screen.route,
+                                    selected = isSelected,
                                     onClick = {
-                                        navController.navigate(screen.route) {
+                                        // AQUI ESTÁ LA MAGIA: Si pulsamos en Agenda, forzamos la ruta con el ID 0
+                                        val targetRoute = if (isTasksScreen) "tasks_screen/0" else screen.route
+
+                                        navController.navigate(targetRoute) {
                                             popUpTo(Screen.Home.route) { saveState = true }
                                             launchSingleTop = true
                                             restoreState = true
@@ -174,12 +188,6 @@ fun App(
                             authRepository = authRepository,
                             navController = navController
                         )
-                    }
-
-                    composable(Screen.Tasks.route) {
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("Agenda y Tareas")
-                        }
                     }
 
                     composable(Screen.Profile.route) {
@@ -249,7 +257,6 @@ fun App(
                         )
                     }
 
-                    // --- NUEVA RUTA DEL CHAT ---
                     composable(
                         route = "chat_screen/{projectId}",
                         arguments = listOf(navArgument("projectId") { type = NavType.LongType })
@@ -261,6 +268,16 @@ fun App(
                             viewModel = chatViewModel,
                             onBack = { navController.popBackStack() }
                         )
+                    }
+
+                    // ¡AQUI ESTABA EL ERROR DEL CRASH! La ruta debe ser explícita con {sectionId}
+                    composable(
+                        route = "tasks_screen/{sectionId}",
+                        arguments = listOf(navArgument("sectionId") { type = NavType.LongType })
+                    ) { backStackEntry ->
+                        val sectionId = backStackEntry.arguments?.getLong("sectionId") ?: 0L
+                        val viewModel = remember(sectionId) { TasksViewModel(sectionId) }
+                        TasksScreen(viewModel = viewModel)
                     }
                 }
             }

@@ -12,5 +12,6 @@ data class Task(
     val created_at: String? = null,
     @SerialName("due_date") val dueDate: String? = null,
     @SerialName("is_completed") val isCompleted: Boolean = false,
-    val profiles: List<Profile> = emptyList()
+    val profiles: List<Profile> = emptyList(),
+    @SerialName("project_title") val projectTitle: String? = null
 )

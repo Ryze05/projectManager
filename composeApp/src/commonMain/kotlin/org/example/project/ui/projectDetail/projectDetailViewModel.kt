@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.domain.models.ProjectMember
-import org.example.project.domain.models.Section
 import org.example.project.repository.AuthRepository
 import org.example.project.repository.ProjectRepository
 import org.example.project.repository.SectionRepository
