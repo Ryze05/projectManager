@@ -6,12 +6,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
-import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -45,7 +43,6 @@ fun HomeScreen(
         }
     }
 
-    var showAllProjectsDialog by remember { mutableStateOf(false) }
     var showSectionDialog by remember { mutableStateOf(false) }
     var showChatMenu by remember { mutableStateOf(false) }
     var chatProjectsList by remember { mutableStateOf(emptyList<Project>()) }
@@ -80,11 +77,10 @@ fun HomeScreen(
                 ) {
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    HomeHeader(state.userName, false)
+                    HomeHeader(state.userName, state.avatarUrl,false)
 
                     Spacer(modifier = Modifier.height(30.dp))
 
-                    // Card Azul
                     Card(
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF2563EB)),
                         shape = RoundedCornerShape(16.dp),

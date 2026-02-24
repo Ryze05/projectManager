@@ -10,5 +10,6 @@ data class HomeState(
     val isDialogLoading: Boolean = false,
     val isLoading: Boolean = true,
     val isAdmin: Boolean = false,
+    val avatarUrl: String? = null,
     val error: String? = null
 )

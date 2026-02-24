@@ -31,6 +31,7 @@ class HomeViewModel(
                 _state.update { it.copy(
                     userName = profile?.fullName ?: "Usuario",
                     projects = projects,
+                    avatarUrl = profile?.avatarUrl,
                     isLoading = false,
                     isAdmin = profile?.isAdmin ?: false
                 ) }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,12 +23,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 
 @Composable
-fun HomeHeader(userName: String, isLoading: Boolean) {
+fun HomeHeader(userName: String, avatarUrl: String?, isLoading: Boolean) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -35,7 +39,21 @@ fun HomeHeader(userName: String, isLoading: Boolean) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Surface(modifier = Modifier.size(48.dp), shape = CircleShape, color = Color(0xFFDBEAFE)) {
-                Icon(Icons.Default.Person, null, modifier = Modifier.padding(8.dp), tint = Color(0xFF2563EB))
+                if (avatarUrl != null) {
+                    AsyncImage(
+                        model = avatarUrl,
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        Icons.Default.Person,
+                        null,
+                        modifier = Modifier.padding(8.dp),
+                        tint = Color(0xFF2563EB)
+                    )
+                }
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column {
