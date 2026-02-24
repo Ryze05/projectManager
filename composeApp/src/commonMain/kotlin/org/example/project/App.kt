@@ -127,7 +127,7 @@ fun App(
                                         navController.navigate(screen.targetRoute) {
                                             val baseRoute = Screen.Home.route
                                             if (screen == Screen.Home) {
-                                                popUpTo(baseRoute) { inclusive = true }
+                                                popUpTo(baseRoute) { inclusive = false }
                                             } else {
                                                 popUpTo(baseRoute) { saveState = true }
                                             }
