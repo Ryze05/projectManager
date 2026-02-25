@@ -7,7 +7,6 @@ import org.example.project.domain.models.Profile
 import org.example.project.domain.models.Project
 import org.example.project.domain.models.ProjectMember
 import org.example.project.domain.models.Section
-import org.example.project.domain.models.Task
 import org.example.project.network.SupabaseClient
 
 class ProjectRepository {
@@ -42,42 +41,6 @@ class ProjectRepository {
         val newProject = Project(title = title, ownerId = ownerId)
         SupabaseClient.client.postgrest["project"].insert(newProject)
     }
-
-    /*suspend fun getProjectSectionsWithTasks(projectId: Long, userId: String, isAdmin: Boolean): List<Section> {
-        return try {
-            val query = if (isAdmin) {
-                """
-                *, 
-                task(
-                    *, 
-                    profiles:profile(*)
-                )
-            """.trimIndent()
-            } else {
-                """
-                *, 
-                task!inner(
-                    *, 
-                    task_assignment!inner(profile_id),
-                    profiles:profile(*)
-                )
-            """.trimIndent()
-            }
-
-            SupabaseClient.client.from("section")
-                .select(columns = Columns.raw(query)) {
-                    filter {
-                        eq("project_id", projectId)
-                        if (!isAdmin) {
-                            eq("task.task_assignment.profile_id", userId)
-                        }
-                    }
-                }
-                .decodeList<Section>()
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }*/
 
     suspend fun getProjectSectionsWithTasksProject(projectId: Long, userId: String): List<Section> {
         return try {

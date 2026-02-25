@@ -6,14 +6,12 @@ import io.github.jan.supabase.storage.storage
 import kotlinx.serialization.json.JsonObject
 import org.example.project.domain.models.Profile
 import org.example.project.network.SupabaseClient
-import kotlin.time.Clock
 
 class ProfileRepository {
     private val bucket = SupabaseClient.client.storage.from("avatars")
 
     suspend fun uploadAvatar(userId: String, byteArray: ByteArray): String {
         return try {
-            // CAMBIO AQUÍ: Ponemos el userId como carpeta antes del nombre del archivo
             val fileName = "$userId/$userId.jpg"
 
             println("DEBUG_STORAGE: Subiendo a la carpeta del usuario: $fileName")
@@ -37,7 +35,6 @@ class ProfileRepository {
 
             SupabaseClient.client.from("profile").update(
                 {
-                    // Usamos el DSL de Supabase para asignar valores
                     if (fullName != null) set("full_name", fullName)
                     if (avatarUrl != null) set("avatar_url", avatarUrl)
                 }
@@ -71,9 +68,9 @@ class ProfileRepository {
 
     suspend fun getTaskCount(userId: String): Int {
         return try {
-            val res = SupabaseClient.client.from("task_assignment") // Tabla correcta según tu SQL
+            val res = SupabaseClient.client.from("task_assignment")
                 .select(columns = Columns.raw("task_id")) {
-                    filter { eq("profile_id", userId) } // En esta tabla es profile_id
+                    filter { eq("profile_id", userId) }
                 }.decodeList<JsonObject>()
             res.size
         } catch (e: Exception) {
@@ -86,7 +83,6 @@ class ProfileRepository {
         return SupabaseClient.client.from("profile").select().decodeList<Profile>()
     }
 
-    // En ProfileRepository.kt
     suspend fun updateAdminStatus(targetUserId: String, status: Boolean) {
         SupabaseClient.client.from("profile").update(
             {

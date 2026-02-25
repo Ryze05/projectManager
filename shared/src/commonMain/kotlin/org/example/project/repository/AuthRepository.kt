@@ -2,7 +2,6 @@ package org.example.project.repository
 
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
-import io.github.jan.supabase.auth.user.UserSession
 import io.github.jan.supabase.postgrest.from
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive

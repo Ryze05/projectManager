@@ -21,38 +21,3 @@ fun AddTextButton(text: String, onClick: () -> Unit) {
         Text(text, style = MaterialTheme.typography.bodyMedium)
     }
 }
-
-
-/*@Composable
-fun AddSectionButton(onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        modifier = Modifier
-            .width(280.dp)
-            .height(56.dp),
-        color = Color.White.copy(alpha = 0.5f),
-        shape = RoundedCornerShape(12.dp),
-        border = androidx.compose.foundation.BorderStroke(
-            width = 1.dp,
-            color = Color(0xFF2563EB).copy(alpha = 0.3f)
-        )
-    ) {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = null,
-                tint = Color(0xFF2563EB)
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = "Añadir otra lista",
-                color = Color(0xFF2563EB),
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-    }
-}*/

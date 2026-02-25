@@ -16,40 +16,6 @@ class ProfileViewModel(
     private val _state = MutableStateFlow(ProfileState())
     val state = _state.asStateFlow()
 
-    /*fun loadProfileData(userId: String) {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            println("DEBUG_PROFILE: Iniciando carga para ID: $userId")
-
-            try {
-                val profile = authRepository.getCurrentUserProfile()
-                println("DEBUG_PROFILE: Objeto Perfil -> $profile")
-
-                if (profile == null) {
-                    println("DEBUG_PROFILE: ALERTA - El perfil volvió nulo. Revisa RLS en Supabase.")
-                }
-
-                val pCount = profileRepository.getProjectCount(userId)
-                val tCount = profileRepository.getTaskCount(userId)
-                println("DEBUG_PROFILE: Conteos -> Proyectos: $pCount, Tareas: $tCount")
-
-                _state.update { it.copy(
-                    userName = profile?.fullName ?: "Nombre no encontrado",
-                    email = profile?.email ?: "Email no encontrado",
-                    avatarUrl = profile?.avatarUrl,
-                    isAdmin = profile?.isAdmin ?: false,
-                    totalProjects = pCount,
-                    totalTasks = tCount,
-                    isLoading = false
-                ) }
-            } catch (e: Exception) {
-                println("DEBUG_PROFILE: ERROR CRÍTICO -> ${e.message}")
-                e.printStackTrace()
-                _state.update { it.copy(isLoading = false, error = e.message) }
-            }
-        }
-    }*/
-
     fun loadProfileData(userId: String) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }

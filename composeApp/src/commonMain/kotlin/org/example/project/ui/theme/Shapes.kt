@@ -5,9 +5,9 @@ import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
 
 val AppShapes = Shapes(
-    small = RoundedCornerShape(8.dp), // Inputs
+    small = RoundedCornerShape(8.dp),
 
-    medium = RoundedCornerShape(12.dp), // Cards
+    medium = RoundedCornerShape(12.dp),
 
-    large = RoundedCornerShape(16.dp) // Componentes grandes
+    large = RoundedCornerShape(16.dp)
 )

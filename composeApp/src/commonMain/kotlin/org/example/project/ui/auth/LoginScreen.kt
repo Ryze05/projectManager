@@ -96,7 +96,6 @@ fun LoginScreen(
                     text = "Gestión de proyectos",
                     style = MaterialTheme.typography.headlineLarge,
                     color = MaterialTheme.colorScheme.onBackground,
-                    //textAlign = TextAlign.Justify,
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -105,7 +104,6 @@ fun LoginScreen(
                     text = "Inicia sesión para continuar",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    //textAlign = TextAlign.Justify,
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -186,8 +184,6 @@ fun LoginScreen(
                         }
                     }
                 )
-
-                //TODO RECUPERAR CONTRASEÑA
 
                 Spacer(modifier = Modifier.height(32.dp))
 

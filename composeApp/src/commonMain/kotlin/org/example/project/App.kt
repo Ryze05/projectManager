@@ -73,8 +73,6 @@ fun App(
         val profileRepository = remember { ProfileRepository() }
         val viewModelProfile = remember { ProfileViewModel(authRepository, profileRepository) }
 
-        var chatProjectsList by remember { mutableStateOf<List<Project>>(emptyList()) }
-
         var isLoadingSession by remember { mutableStateOf(true) }
         var startDestination by remember { mutableStateOf(Screen.Login.route) }
 

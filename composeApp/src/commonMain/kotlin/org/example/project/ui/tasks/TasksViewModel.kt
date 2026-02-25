@@ -5,9 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import org.example.project.domain.models.ProjectTitleRelation
-import org.example.project.domain.models.SectionRelation
-import org.example.project.domain.models.Task
 import org.example.project.domain.models.Task2
 import org.example.project.repository.TaskRepository
 
@@ -47,21 +44,4 @@ class TasksViewModel(val currentSectionId: Long) : ViewModel() {
             task.id?.let { repo.toggleTaskCompletion(it, newStatus) }
         }
     }
-
-    /*fun createTask(title: String, description: String, priority: String, dueDate: String) {
-        viewModelScope.launch {
-            if (currentSectionId != 0L) {
-                try {
-                    repo.createTask(
-                        title = title,
-                        description = description.ifBlank { null },
-                        sectionId = currentSectionId,
-                        priority = priority,
-                        dueDate = dueDate.ifBlank { null }
-                    )
-                    loadTasks()
-                } catch (e: Exception) { e.printStackTrace() }
-            }
-        }
-    }*/
 }

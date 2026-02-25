@@ -59,7 +59,7 @@ fun SectionColumn(section: Section) {
         }
 
         TextButton(
-            onClick = { /* TODO */ },
+            onClick = {},
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF2563EB))
         ) {

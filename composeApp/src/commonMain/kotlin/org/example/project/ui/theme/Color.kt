@@ -2,7 +2,6 @@ package org.example.project.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// TODO Adaptar a la paleta de colores de la APP
 val BluePrimary = Color(0xFF1D66DB)
 val BlueSecondary = Color(0xFF0043A8)
 val BackgroundWhite = Color(0xFFFFFFFF)

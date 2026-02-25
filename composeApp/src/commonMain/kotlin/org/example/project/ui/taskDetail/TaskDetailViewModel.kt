@@ -63,7 +63,6 @@ class TaskDetailViewModel(
             try {
                 taskRepository.unassignUserFromTask(currentTask.id!!, profileId)
             } catch (e: Exception) {
-                // Rollback
                 _state.update { it.copy(task = currentTask.copy(profiles = oldProfiles), error = e.message) }
             }
         }
