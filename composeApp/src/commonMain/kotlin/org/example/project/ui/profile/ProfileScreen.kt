@@ -41,7 +41,9 @@ fun ProfileScreen(
     viewModel: ProfileViewModel,
     authRepository: AuthRepository,
     onLogout: () -> Unit,
-    onPickImage: () -> Unit
+    onPickImage: () -> Unit,
+    isDarkTheme: Boolean,
+    onThemeToggle: (Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     var showEditNameDialog by remember { mutableStateOf(false) }
@@ -75,12 +77,17 @@ fun ProfileScreen(
         )
     }
 
-    Box(modifier = Modifier.fillMaxWidth()) {
+    Box(modifier = Modifier.fillMaxSize()) {
         if (state.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = MaterialTheme.colorScheme.primary
+            )
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().background(Color(0xFFF5F6FA)),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
                 contentPadding = PaddingValues(bottom = 32.dp)
             ) {
                 item {
@@ -99,21 +106,22 @@ fun ProfileScreen(
 
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         StatCard(state.totalTasks.toString(), "TAREAS", Modifier.weight(1f))
                         StatCard(state.totalProjects.toString(), "PROYECTOS", Modifier.weight(1f))
-                        //StatCard("100%", "ÉXITO", Modifier.weight(1f))
                     }
                 }
 
                 if (state.isAdmin) {
                     item {
                         Text(
-                            "GESTIÓN DE EQUIPO",
+                            text = "GESTIÓN DE EQUIPO",
                             style = MaterialTheme.typography.labelLarge,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(start = 20.dp, top = 24.dp, bottom = 8.dp)
                         )
                     }
@@ -128,11 +136,59 @@ fun ProfileScreen(
                 }
 
                 item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "AJUSTES",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 20.dp, top = 8.dp, bottom = 8.dp)
+                    )
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Modo Oscuro",
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Switch(
+                                checked = isDarkTheme,
+                                onCheckedChange = onThemeToggle,
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                                )
+                            )
+                        }
+                    }
+                }
+
+                item {
                     Spacer(modifier = Modifier.height(32.dp))
                     Button(
                         onClick = onLogout,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFEBEE), contentColor = Color.Red),
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).height(50.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.error
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Icon(Icons.AutoMirrored.Filled.ExitToApp, null)
@@ -140,7 +196,6 @@ fun ProfileScreen(
                         Text("Cerrar Sesión", fontWeight = FontWeight.Bold)
                     }
                 }
-
             }
         }
     }

@@ -32,7 +32,7 @@ fun DetailInfoCard(
 ) {
     Surface(
         modifier = modifier,
-        color = Color(0xFFF8FAFC),
+        color = MaterialTheme.colorScheme.surfaceVariant,
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(
@@ -40,15 +40,26 @@ fun DetailInfoCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier.size(36.dp).background(iconBg, RoundedCornerShape(10.dp)),
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(iconBg, RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(icon, null, tint = iconColor, modifier = Modifier.size(18.dp))
             }
             Spacer(Modifier.width(10.dp))
             Column {
-                Text(label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-                Text(value, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
         }
     }

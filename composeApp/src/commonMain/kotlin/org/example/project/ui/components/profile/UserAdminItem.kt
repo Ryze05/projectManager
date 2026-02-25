@@ -20,16 +20,35 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun UserAdminItem(name: String, email: String, isAdmin: Boolean, onToggleAdmin: (Boolean) -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(12.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(name, fontWeight = FontWeight.Bold)
-                Text(email, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Text(
+                    text = name,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = email,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
-            Switch(checked = isAdmin, onCheckedChange = onToggleAdmin)
+            Switch(
+                checked = isAdmin,
+                onCheckedChange = onToggleAdmin,
+            )
         }
     }
 }

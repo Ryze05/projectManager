@@ -24,8 +24,8 @@ import org.example.project.ui.tasks.TasksViewModel
 import org.example.project.ui.auth.AuthViewModel
 import org.example.project.ui.auth.LoginScreen
 import org.example.project.ui.auth.RegisterScreen
-import org.example.project.ui.components.chat.ChatScreen
-import org.example.project.ui.components.chat.ChatViewModel
+import org.example.project.ui.chat.ChatScreen
+import org.example.project.ui.chat.ChatViewModel
 import org.example.project.ui.home.HomeScreen
 import org.example.project.ui.home.HomeViewModel
 import org.example.project.ui.projects.ProjectsScreen
@@ -44,8 +44,10 @@ import org.example.project.ui.theme.ProjectManagerTheme
 fun App(
     onPickImage: (@Composable (onImagePicked: (ByteArray) -> Unit) -> () -> Unit)? = null
 ) {
-    ProjectManagerTheme {
+    var isDarkTheme by remember { mutableStateOf(false) }
+    ProjectManagerTheme(darkTheme = isDarkTheme) {
         val navController = rememberNavController()
+
 
         // AUTH
         val authRepository = remember { AuthRepository() }
@@ -197,7 +199,9 @@ fun App(
                                 viewModelAuth.logout()
                                 navController.navigate(Screen.Login.route) { popUpTo(0) }
                             },
-                            onPickImage = triggerPicker
+                            onPickImage = triggerPicker,
+                            isDarkTheme = isDarkTheme,
+                            onThemeToggle = { isDarkTheme = it }
                         )
                     }
 

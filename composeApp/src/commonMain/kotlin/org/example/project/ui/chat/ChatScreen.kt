@@ -1,4 +1,4 @@
-package org.example.project.ui.components.chat
+package org.example.project.ui.chat
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,10 +12,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.example.project.domain.models.Message
+import org.example.project.ui.components.chat.MessageBubble
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,13 +36,15 @@ fun ChatScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         },
         bottomBar = {
             Surface(
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 8.dp
             ) {
                 Row(
@@ -59,7 +61,9 @@ fun ChatScreen(
                         placeholder = { Text("Escribe un mensaje...") },
                         shape = RoundedCornerShape(24.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = Color.LightGray,
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
                             focusedBorderColor = MaterialTheme.colorScheme.primary
                         )
                     )
@@ -73,7 +77,7 @@ fun ChatScreen(
                             }
                         },
                         containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.White,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
                         shape = RoundedCornerShape(50)
                     ) {
                         Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar")
@@ -81,7 +85,7 @@ fun ChatScreen(
                 }
             }
         },
-        containerColor = Color(0xFFF5F6FA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -95,46 +99,6 @@ fun ChatScreen(
                 MessageBubble(
                     message = message,
                     currentUserName = viewModel.currentUserName
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun MessageBubble(message: Message, currentUserName: String) {
-    val isMine = message.userName == currentUserName
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = if (isMine) Arrangement.End else Arrangement.Start
-    ) {
-        Column(
-            horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
-        ) {
-            Text(
-                text = message.userName,
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.Gray,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-            )
-
-            Box(
-                modifier = Modifier
-                    .background(
-                        color = if (isMine) MaterialTheme.colorScheme.primary else Color.White,
-                        shape = RoundedCornerShape(
-                            topStart = 16.dp,
-                            topEnd = 16.dp,
-                            bottomStart = if (isMine) 16.dp else 0.dp,
-                            bottomEnd = if (isMine) 0.dp else 16.dp
-                        )
-                    )
-                    .padding(12.dp)
-            ) {
-                Text(
-                    text = message.content,
-                    color = if (isMine) Color.White else Color.Black
                 )
             }
         }

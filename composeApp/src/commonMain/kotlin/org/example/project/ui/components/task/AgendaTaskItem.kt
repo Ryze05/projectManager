@@ -33,7 +33,10 @@ fun AgendaTaskItem(task: Task2, onCheckedChange: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = if (task.isCompleted) Color(0xFFF1F5F9) else Color.White
+            containerColor = if (task.isCompleted)
+                MaterialTheme.colorScheme.surfaceVariant
+            else
+                MaterialTheme.colorScheme.surface
         ),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(if (task.isCompleted) 0.dp else 2.dp)
@@ -49,7 +52,7 @@ fun AgendaTaskItem(task: Task2, onCheckedChange: () -> Unit) {
                     else
                         Icons.Default.RadioButtonUnchecked,
                     contentDescription = null,
-                    tint = Color(0xFF2563EB)
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -62,10 +65,14 @@ fun AgendaTaskItem(task: Task2, onCheckedChange: () -> Unit) {
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
                         textDecoration = if (task.isCompleted) TextDecoration.LineThrough else null,
-                        color = if (task.isCompleted) Color.Gray else Color.Black,
+                        color = if (task.isCompleted)
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        else
+                            MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f, fill = false)
                     )
                     Spacer(Modifier.width(8.dp))
+
                     Surface(
                         color = when (task.priority?.lowercase()) {
                             "alta" -> Color(0xFFFEE2E2); "media" -> Color(0xFFFEF3C7); else -> Color(0xFFDCFCE7)
@@ -89,13 +96,13 @@ fun AgendaTaskItem(task: Task2, onCheckedChange: () -> Unit) {
                         imageVector = Icons.Default.CalendarToday,
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),
-                        tint = Color.Gray
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
                         text = task.dueDate?.take(10) ?: "Sin fecha",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

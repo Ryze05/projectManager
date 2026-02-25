@@ -14,8 +14,19 @@ import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 fun SectionHeader(title: String, actionText: String, onAction: () -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        TextButton(onClick = onAction) { Text(actionText, color = Color(0xFF2563EB)) }
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        TextButton(onClick = onAction) {
+            Text(actionText, color = MaterialTheme.colorScheme.primary)
+        }
     }
 }

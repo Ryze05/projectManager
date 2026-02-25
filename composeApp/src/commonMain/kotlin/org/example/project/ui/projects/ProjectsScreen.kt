@@ -54,23 +54,24 @@ fun ProjectsScreen(
             if (state.isAdmin) {
                 FloatingActionButton(
                     onClick = { showDialog = true },
-                    containerColor = Color(0xFF2563EB),
-                    contentColor = Color.White,
+                    // CAMBIO: Color primario adaptativo
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = CircleShape
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Crear")
                 }
             }
         },
-        containerColor = Color(0xFFF5F6FA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         if (showDialog && state.isAdmin) {
             AlertDialog(
                 onDismissRequest = { showDialog = false },
-                title = { Text("Nuevo Proyecto", fontWeight = FontWeight.Bold) },
+                title = { Text("Nuevo Proyecto", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                 text = {
                     Column {
-                        Text("Introduce el nombre del proyecto:")
+                        Text("Introduce el nombre del proyecto:", color = MaterialTheme.colorScheme.onSurface)
                         Spacer(Modifier.height(8.dp))
                         OutlinedTextField(
                             value = newProjectTitle,
@@ -78,13 +79,19 @@ fun ProjectsScreen(
                             placeholder = { Text("Ej: Rediseño Web") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                            )
                         )
                     }
                 },
                 confirmButton = {
                     Button(
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         onClick = {
                             if (newProjectTitle.isNotBlank()) {
                                 authRepository.getCurrentUserId()?.let { userId ->
@@ -94,13 +101,14 @@ fun ProjectsScreen(
                                 showDialog = false
                             }
                         }
-                    ) { Text("Crear Proyecto") }
+                    ) { Text("Crear Proyecto", color = MaterialTheme.colorScheme.onPrimary) }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDialog = false }) {
-                        Text("Cancelar", color = Color.Gray)
+                        Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                }
+                },
+                containerColor = MaterialTheme.colorScheme.surface
             )
         }
 
@@ -110,18 +118,17 @@ fun ProjectsScreen(
                 .fillMaxSize()
                 .padding(horizontal = 20.dp)
         ) {
-            //Spacer(modifier = Modifier.height(20.dp))
-
             Text(
                 text = "Proyectos",
                 style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Text(
                 text = "Gestiona tus frentes abiertos",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -133,7 +140,7 @@ fun ProjectsScreen(
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
                         Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                        color = Color(0xFF2563EB)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             ) {
@@ -144,7 +151,7 @@ fun ProjectsScreen(
                         text = {
                             Text(
                                 text = title,
-                                color = if (selectedTab == index) Color(0xFF2563EB) else Color.Gray,
+                                color = if (selectedTab == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
                             )
                         }
@@ -158,10 +165,10 @@ fun ProjectsScreen(
                 if (state.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = Color(0xFF2563EB)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 } else if (state.error != null) {
-                    Text("Error: ${state.error}", color = Color.Red, modifier = Modifier.align(Alignment.Center))
+                    Text("Error: ${state.error}", color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center))
                 } else {
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(16.dp),

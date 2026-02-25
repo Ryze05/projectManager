@@ -46,24 +46,21 @@ fun ProfileHeader(
             .padding(vertical = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // --- SECCIÓN DEL AVATAR ---
         Box(contentAlignment = Alignment.BottomEnd) {
             Surface(
                 modifier = Modifier.size(110.dp),
                 shape = CircleShape,
-                color = Color(0xFFDBEAFE) // Fondo azul claro por defecto
+                color = MaterialTheme.colorScheme.primaryContainer
             ) {
                 if (isUploading) {
-                    // Estado: Subiendo imagen
                     Box(contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(30.dp),
                             strokeWidth = 2.dp,
-                            color = Color(0xFF2563EB)
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 } else if (avatarUrl != null) {
-                    // Estado: Tenemos imagen en Supabase
                     AsyncImage(
                         model = avatarUrl,
                         contentDescription = "Foto de perfil",
@@ -73,27 +70,25 @@ fun ProfileHeader(
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    // Estado: No hay imagen (Evita el crash de ImageVector en Coil)
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
                         modifier = Modifier.padding(24.dp),
-                        tint = Color(0xFF2563EB)
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
 
-            // Botón flotante para la cámara
             IconButton(
                 onClick = onEditPhoto,
                 modifier = Modifier
                     .size(32.dp)
-                    .background(Color(0xFF2563EB), CircleShape)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape)
             ) {
                 Icon(
                     imageVector = Icons.Default.CameraAlt,
                     contentDescription = "Cambiar foto",
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -101,32 +96,30 @@ fun ProfileHeader(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- NOMBRE CON BOTÓN EDITAR ---
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 40.dp) // Offset para que el texto parezca centrado
+            modifier = Modifier.padding(start = 40.dp)
         ) {
             Text(
                 text = userName,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1F2937)
+                color = MaterialTheme.colorScheme.onSurface
             )
             IconButton(onClick = onEditName) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Editar nombre",
                     modifier = Modifier.size(18.dp),
-                    tint = Color.Gray
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
 
-        // --- EMAIL ---
         Text(
             text = email,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

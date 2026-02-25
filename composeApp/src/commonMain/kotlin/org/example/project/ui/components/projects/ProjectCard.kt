@@ -50,7 +50,7 @@ fun ProjectCard(project: Project, navController: NavController) {
     }
 
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
@@ -79,7 +79,7 @@ fun ProjectCard(project: Project, navController: NavController) {
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f),
-                        color = Color(0xFF1F2937)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Surface(
@@ -101,7 +101,7 @@ fun ProjectCard(project: Project, navController: NavController) {
                 Text(
                     text = "Creado el: ${project.createdAt?.take(10) ?: "N/A"}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -114,7 +114,7 @@ fun ProjectCard(project: Project, navController: NavController) {
                     Text(
                         text = "Progreso",
                         style = MaterialTheme.typography.labelMedium,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "${(progress * 100).toInt()}%",
@@ -133,7 +133,7 @@ fun ProjectCard(project: Project, navController: NavController) {
                         .height(8.dp)
                         .clip(RoundedCornerShape(4.dp)),
                     color = if (progress >= 1f) Color(0xFF22C55E) else baseColor,
-                    trackColor = Color(0xFFF3F4F6),
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
                 )
             }
         }

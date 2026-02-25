@@ -72,16 +72,19 @@ fun TasksScreen(viewModel: TasksViewModel) {
     }
 
     Scaffold(
-        containerColor = Color(0xFFF5F6FA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize().padding(horizontal = 20.dp)) {
             Text(
                 text = if (viewModel.currentSectionId == 0L) "Mi Agenda" else "Tareas",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFF1E293B)
+                color = MaterialTheme.colorScheme.onSurface
             )
-            Text("Gestiona tus responsabilidades personales", color = Color.Gray)
+            Text(
+                text = "Gestiona tus responsabilidades personales",
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -98,19 +101,24 @@ fun TasksScreen(viewModel: TasksViewModel) {
                         modifier = Modifier.menuAnchor().fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            unfocusedBorderColor = Color.Transparent
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
                         )
                     )
                     ExposedDropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false },
-                        modifier = Modifier.background(Color.White)
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                     ) {
                         projectNames.forEach { name ->
                             DropdownMenuItem(
-                                text = { Text(name) },
+                                text = {
+                                    Text(
+                                        text = name,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                },
                                 onClick = {
                                     selectedProjectFilter = name
                                     expanded = false
@@ -124,11 +132,14 @@ fun TasksScreen(viewModel: TasksViewModel) {
 
             if (state.isLoading) {
                 Box(Modifier.fillMaxSize(), Alignment.Center) {
-                    CircularProgressIndicator(color = Color(0xFF2563EB))
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             } else if (state.tasks.isEmpty()) {
                 Box(Modifier.fillMaxSize(), Alignment.Center) {
-                    Text("No tienes tareas pendientes 🎉", color = Color.Gray)
+                    Text(
+                        text = "No tienes tareas pendientes 🎉",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             } else {
                 LazyColumn(
@@ -141,12 +152,16 @@ fun TasksScreen(viewModel: TasksViewModel) {
                                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp, start = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Box(modifier = Modifier.size(4.dp, 16.dp).background(Color(0xFF2563EB), CircleShape))
+                                Box(
+                                    modifier = Modifier
+                                        .size(4.dp, 16.dp)
+                                        .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = project.uppercase(),
                                     style = MaterialTheme.typography.labelLarge,
-                                    color = Color(0xFF2563EB),
+                                    color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold
                                 )
                             }

@@ -51,6 +51,7 @@ fun HomeScreen(
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
@@ -59,9 +60,10 @@ fun HomeScreen(
                         showChatMenu = true
                     }
                 },
-                containerColor = Color(0xFF2563EB)
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Comment, contentDescription = "Chat", tint = Color.White)
+                Icon(Icons.Default.Comment, contentDescription = "Chat")
             }
         }
     ) { padding ->
@@ -78,46 +80,39 @@ fun HomeScreen(
                         .verticalScroll(rememberScrollState())
                 ) {
 
-                    HomeHeader(state.userName, state.avatarUrl,false)
+                    HomeHeader(state.userName, state.avatarUrl, false)
 
                     Spacer(modifier = Modifier.height(30.dp))
 
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF2563EB)),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
-                            Text("Proyectos en marcha", color = Color.White.copy(alpha = 0.8f))
+                            Text(
+                                "Proyectos en marcha",
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                            )
                             Text(
                                 text = "${state.projects.size}",
                                 style = MaterialTheme.typography.displayMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onPrimary
                             )
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
                                     text = if (state.isAdmin) "Gestionando el éxito del equipo" else "Sigue así, el trabajo duro da frutos.",
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     style = MaterialTheme.typography.bodySmall
                                 )
-                                if (state.isAdmin) {
-                                    Spacer(Modifier.width(4.dp))
-                                    Icon(
-                                        imageVector = Icons.Default.VerifiedUser,
-                                        contentDescription = null,
-                                        tint = Color.White.copy(alpha = 0.7f),
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                } else {
-                                    Spacer(Modifier.width(4.dp))
-                                    Icon(
-                                        imageVector = Icons.Default.TrendingUp,
-                                        contentDescription = null,
-                                        tint = Color.White.copy(alpha = 0.7f),
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                }
+                                Spacer(Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = if (state.isAdmin) Icons.Default.VerifiedUser else Icons.Default.TrendingUp,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(14.dp)
+                                )
                             }
                         }
                     }
@@ -143,10 +138,10 @@ fun HomeScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(100.dp)
-                                .background(Color.White, RoundedCornerShape(12.dp)),
+                                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("No hay proyectos aún 📂", color = Color.Gray)
+                            Text("No hay proyectos aún 📂", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     } else {
                         ActiveProjectsColumn(
@@ -164,10 +159,10 @@ fun HomeScreen(
             if (state.isLoading || state.userName == "Cargando...") {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFFF5F6FA)
+                    color = MaterialTheme.colorScheme.background
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Color(0xFF2563EB))
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
@@ -175,28 +170,52 @@ fun HomeScreen(
             if (showSectionDialog) {
                 AlertDialog(
                     onDismissRequest = { showSectionDialog = false },
-                    title = { Text("Elige una sección", fontWeight = FontWeight.ExtraBold) },
+                    title = {
+                        Text(
+                            "Elige una sección",
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    },
                     text = {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             if (state.isDialogLoading) {
                                 Box(Modifier.fillMaxWidth().height(150.dp), Alignment.Center) {
-                                    CircularProgressIndicator(color = Color(0xFF2563EB))
+                                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                                 }
                             } else {
-                                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.heightIn(max = 350.dp)) {
+                                LazyColumn(
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.heightIn(max = 350.dp)
+                                ) {
                                     items(state.selectedProjectSections) { section ->
                                         Card(
                                             onClick = {
                                                 showSectionDialog = false
                                                 navController.navigate("tasks_screen/${section.id}")
                                             },
-                                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                                            colors = CardDefaults.cardColors(
+                                                containerColor = MaterialTheme.colorScheme.surface
+                                            ),
                                             elevation = CardDefaults.cardElevation(2.dp),
                                             shape = RoundedCornerShape(12.dp)
                                         ) {
-                                            Row(Modifier.fillMaxWidth().padding(16.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-                                                Text(section.name, fontWeight = FontWeight.Bold)
-                                                Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, null, Modifier.size(16.dp), tint = Color.Gray)
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    section.name,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onSurface
+                                                )
+                                                Icon(
+                                                    Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                                    null,
+                                                    Modifier.size(16.dp),
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
                                             }
                                         }
                                     }
@@ -206,10 +225,10 @@ fun HomeScreen(
                     },
                     confirmButton = {
                         TextButton(onClick = { showSectionDialog = false }) {
-                            Text("Cancelar", color = Color(0xFF2563EB), fontWeight = FontWeight.Bold)
+                            Text("Cancelar", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                         }
                     },
-                    containerColor = Color(0xFFF5F6FA),
+                    containerColor = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(28.dp)
                 )
             }
@@ -217,10 +236,18 @@ fun HomeScreen(
             if (showChatMenu) {
                 AlertDialog(
                     onDismissRequest = { showChatMenu = false },
-                    title = { Text("¿A qué sala quieres entrar?") },
+                    title = {
+                        Text(
+                            "¿A qué sala quieres entrar?",
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    },
                     text = {
                         if (chatProjectsList.isEmpty()) {
-                            Text("No tienes proyectos activos.")
+                            Text(
+                                "No tienes proyectos activos.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         } else {
                             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 items(chatProjectsList) { project ->
@@ -231,13 +258,16 @@ fun HomeScreen(
                                                 showChatMenu = false
                                                 navController.navigate("chat_screen/${project.id}")
                                             },
-                                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.surface
+                                        ),
                                         elevation = CardDefaults.cardElevation(2.dp)
                                     ) {
                                         Text(
                                             text = "💬 Chat de ${project.title}",
                                             modifier = Modifier.padding(16.dp),
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
                                     }
                                 }
@@ -246,10 +276,10 @@ fun HomeScreen(
                     },
                     confirmButton = {
                         TextButton(onClick = { showChatMenu = false }) {
-                            Text("Cancelar")
+                            Text("Cancelar", color = MaterialTheme.colorScheme.primary)
                         }
                     },
-                    containerColor = Color(0xFFF5F6FA)
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             }
         }

@@ -35,20 +35,43 @@ fun ProjectCardVertical(title: String, date: String, color: Color, onClick: () -
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().height(75.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(Modifier.fillMaxSize()) {
             Box(Modifier.width(12.dp).fillMaxHeight().background(color))
-            Column(Modifier.padding(16.dp).weight(1f), verticalArrangement = Arrangement.Center) {
-                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1)
+            Column(
+                Modifier.padding(16.dp).weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.DateRange, null, Modifier.size(14.dp), tint = Color.Gray)
+                    Icon(
+                        Icons.Default.DateRange,
+                        null,
+                        Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(date, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    Text(
+                        date,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
-            Icon(Icons.Default.ChevronRight, null, tint = Color.LightGray, modifier = Modifier.align(Alignment.CenterVertically).padding(end = 16.dp))
+            Icon(
+                Icons.Default.ChevronRight,
+                null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.align(Alignment.CenterVertically).padding(end = 16.dp)
+            )
         }
     }
 }

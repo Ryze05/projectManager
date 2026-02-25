@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,7 +37,11 @@ fun HomeHeader(userName: String, avatarUrl: String?, isLoading: Boolean) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Surface(modifier = Modifier.size(48.dp), shape = CircleShape, color = Color(0xFFDBEAFE)) {
+            Surface(
+                modifier = Modifier.size(48.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer
+            ) {
                 if (avatarUrl != null) {
                     AsyncImage(
                         model = avatarUrl,
@@ -51,22 +54,44 @@ fun HomeHeader(userName: String, avatarUrl: String?, isLoading: Boolean) {
                         Icons.Default.Person,
                         null,
                         modifier = Modifier.padding(8.dp),
-                        tint = Color(0xFF2563EB)
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column {
-                Text("Buenos días", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                Text(
+                    "Buenos días",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 if (isLoading && userName == "Cargando...") {
-                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = Color(0xFF2563EB))
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 } else {
-                    Text("Hola, $userName", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Hola, $userName",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
             }
         }
-        IconButton(onClick = { }, modifier = Modifier.background(Color.White, CircleShape).size(40.dp)) {
-            Icon(Icons.Default.Notifications, null)
+        IconButton(
+            onClick = { },
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface, CircleShape)
+                .size(40.dp)
+        ) {
+            Icon(
+                Icons.Default.Notifications,
+                null,
+                tint = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }

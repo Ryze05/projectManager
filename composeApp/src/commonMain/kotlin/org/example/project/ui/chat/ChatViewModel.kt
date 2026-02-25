@@ -1,4 +1,4 @@
-package org.example.project.ui.components.chat
+package org.example.project.ui.chat
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf

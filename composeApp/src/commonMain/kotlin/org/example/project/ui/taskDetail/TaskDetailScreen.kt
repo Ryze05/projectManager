@@ -68,17 +68,18 @@ fun TaskDetailScreen(
     onBack: () -> Unit,
     projectName: String
 ) {
-
     val state by viewModel.state.collectAsState()
     var showMemberSelector by remember { mutableStateOf(false) }
 
     LaunchedEffect(taskId) {
         viewModel.loadTaskData(taskId, projectId)
     }
+
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Tarea Detalle", fontWeight = FontWeight.Bold) },
+                title = { Text("Detalle de Tarea", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
@@ -90,25 +91,28 @@ fun TaskDetailScreen(
                             Icon(
                                 imageVector = Icons.Default.GroupAdd,
                                 contentDescription = "Asignar miembro",
-                                tint = Color(0xFF2563EB)
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF5F6FA))
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         }
     ) { padding ->
         if (state.isLoading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Color(0xFF2563EB))
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         } else if (state.error != null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("Error: ${state.error}", color = MaterialTheme.colorScheme.error)
             }
         } else {
-            state.task?.let {
+            state.task?.let { task ->
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -119,25 +123,30 @@ fun TaskDetailScreen(
                     item {
                         Column(modifier = Modifier.padding(top = 16.dp)) {
                             Text(
-                                text = it.title,
+                                text = task.title,
                                 style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.ExtraBold
+                                fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(Modifier.height(8.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Surface(
-                                    color = Color(0xFFDBEAFE),
+                                    color = MaterialTheme.colorScheme.primaryContainer,
                                     shape = RoundedCornerShape(16.dp)
                                 ) {
                                     Text(
-                                        text = if (it.isCompleted) "Finalizada" else "En progreso",
+                                        text = if (task.isCompleted) "Finalizada" else "En progreso",
                                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                                         style = MaterialTheme.typography.labelMedium,
-                                        color = Color(0xFF2563EB)
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
                                     )
                                 }
                                 Spacer(Modifier.width(8.dp))
-                                Text("• $projectName", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+                                Text(
+                                    text = "• $projectName",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
                             }
                         }
                     }
@@ -150,17 +159,17 @@ fun TaskDetailScreen(
                             DetailInfoCard(
                                 icon = Icons.Default.CalendarMonth,
                                 label = "Fecha de entrega",
-                                value = it.dueDate?.take(10) ?: "Sin fecha",
-                                iconColor = Color(0xFF2563EB),
-                                iconBg = Color(0xFFEFF6FF),
+                                value = task.dueDate?.take(10) ?: "Sin fecha",
+                                iconColor = MaterialTheme.colorScheme.primary,
+                                iconBg = MaterialTheme.colorScheme.primaryContainer,
                                 modifier = Modifier.weight(1f)
                             )
                             DetailInfoCard(
                                 icon = Icons.Default.PriorityHigh,
                                 label = "Prioridad",
-                                value = it.priority.replaceFirstChar { it.uppercase() },
-                                iconColor = Color(0xFFEF4444),
-                                iconBg = Color(0xFFFEF2F2),
+                                value = task.priority.replaceFirstChar { it.uppercase() },
+                                iconColor = MaterialTheme.colorScheme.error,
+                                iconBg = MaterialTheme.colorScheme.errorContainer,
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -168,12 +177,17 @@ fun TaskDetailScreen(
 
                     item {
                         Column {
-                            Text("Descripción", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(
+                                "Descripción",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                             Spacer(Modifier.height(8.dp))
                             Text(
-                                text = it.description ?: "Sin descripción.",
+                                text = task.description ?: "Sin descripción.",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Color.DarkGray,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 lineHeight = 20.sp
                             )
                         }
@@ -181,25 +195,34 @@ fun TaskDetailScreen(
 
                     item {
                         Column {
-                            Text("Miembros asignados", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(
+                                "Miembros asignados",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                             Spacer(Modifier.height(12.dp))
 
                             Card(
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                border = BorderStroke(1.dp, Color(0xFFF1F5F9)),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                                 shape = RoundedCornerShape(12.dp),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                             ) {
                                 Column {
-                                    it.profiles.forEachIndexed { index, profile ->
+                                    task.profiles.forEachIndexed { index, profile ->
                                         MemberRowItem(profile)
-                                        if (index < it.profiles.size - 1) {
-                                            HorizontalDivider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+                                        if (index < task.profiles.size - 1) {
+                                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
                                         }
                                     }
-                                    if (it.profiles.isEmpty()) {
+                                    if (task.profiles.isEmpty()) {
                                         Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                                            Text("No hay miembros asignados", color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+                                            Text(
+                                                "No hay miembros asignados",
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
                                         }
                                     }
                                 }
@@ -207,22 +230,24 @@ fun TaskDetailScreen(
                         }
                     }
                 }
+
                 if (showMemberSelector && state.isAdmin) {
                     AlertDialog(
                         onDismissRequest = { showMemberSelector = false },
                         shape = RoundedCornerShape(28.dp),
-                        containerColor = Color.White,
+                        containerColor = MaterialTheme.colorScheme.surface,
                         title = {
                             Column {
                                 Text(
                                     text = "Asignar a la tarea",
                                     style = MaterialTheme.typography.headlineSmall,
-                                    fontWeight = FontWeight.ExtraBold
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     text = "${state.task?.profiles?.size ?: 0} miembros asignados",
                                     style = MaterialTheme.typography.labelMedium,
-                                    color = Color(0xFF2563EB),
+                                    color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -232,60 +257,43 @@ fun TaskDetailScreen(
                                 Text(
                                     text = "Gestiona quién trabaja en esta tarea.",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Gray,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(bottom = 16.dp)
                                 )
 
                                 if (state.projectMembers.isEmpty()) {
                                     Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                                        Text("No hay miembros en el proyecto", color = Color.LightGray)
+                                        Text("No hay miembros en el proyecto", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
                                 } else {
                                     LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                         items(state.projectMembers, key = { it.id }) { member ->
-                                            val isAlreadyAssigned =
-                                                state.task?.profiles?.any { it.id == member.id } == true
+                                            val isAssigned = state.task?.profiles?.any { it.id == member.id } == true
 
                                             Surface(
-                                                onClick = {
-                                                    if (isAlreadyAssigned) {
-                                                        viewModel.unassignMember(member.id)
-                                                    } else {
-                                                        viewModel.assignMember(member.id)
-                                                    }
-                                                },
+                                                onClick = { if (isAssigned) viewModel.unassignMember(member.id) else viewModel.assignMember(member.id) },
                                                 shape = RoundedCornerShape(16.dp),
-                                                color = if (isAlreadyAssigned) Color(0xFFF1F5F9) else Color(
-                                                    0xFFF8FAFC
-                                                ),
+                                                color = if (isAssigned) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
                                                 border = BorderStroke(
                                                     width = 1.dp,
-                                                    color = if (isAlreadyAssigned) Color.Transparent else Color(
-                                                        0xFFE2E8F0
-                                                    )
+                                                    color = if (isAssigned) Color.Transparent else MaterialTheme.colorScheme.outlineVariant
                                                 )
                                             ) {
                                                 Row(
-                                                    modifier = Modifier.fillMaxWidth()
-                                                        .padding(12.dp),
+                                                    modifier = Modifier.fillMaxWidth().padding(12.dp),
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
                                                     Surface(
                                                         modifier = Modifier.size(40.dp),
                                                         shape = CircleShape,
-                                                        color = if (isAlreadyAssigned) Color(
-                                                            0xFF94A3B8
-                                                        ) else Color(0xFFDBEAFE)
+                                                        color = if (isAssigned) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primaryContainer
                                                     ) {
                                                         Box(contentAlignment = Alignment.Center) {
                                                             Text(
-                                                                text = member.fullName.take(1)
-                                                                    .uppercase(),
+                                                                text = member.fullName.take(1).uppercase(),
                                                                 style = MaterialTheme.typography.titleMedium,
                                                                 fontWeight = FontWeight.Bold,
-                                                                color = if (isAlreadyAssigned) Color.White else Color(
-                                                                    0xFF2563EB
-                                                                )
+                                                                color = if (isAssigned) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.onPrimaryContainer
                                                             )
                                                         }
                                                     }
@@ -297,49 +305,19 @@ fun TaskDetailScreen(
                                                             text = member.fullName,
                                                             style = MaterialTheme.typography.bodyLarge,
                                                             fontWeight = FontWeight.Bold,
-                                                            color = if (isAlreadyAssigned) Color.Gray else Color.Black
+                                                            color = if (isAssigned) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
                                                         )
                                                         Text(
                                                             text = member.email,
                                                             style = MaterialTheme.typography.labelMedium,
-                                                            color = Color.Gray
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                                         )
                                                     }
 
-                                                    if (isAlreadyAssigned) {
-                                                        Surface(
-                                                            color = Color(0xFFE2E8F0),
-                                                            shape = RoundedCornerShape(8.dp)
-                                                        ) {
-                                                            Row(
-                                                                modifier = Modifier.padding(
-                                                                    horizontal = 8.dp,
-                                                                    vertical = 4.dp
-                                                                ),
-                                                                verticalAlignment = Alignment.CenterVertically
-                                                            ) {
-                                                                Text(
-                                                                    text = "Asignado",
-                                                                    style = MaterialTheme.typography.labelSmall,
-                                                                    fontWeight = FontWeight.Bold,
-                                                                    color = Color.DarkGray
-                                                                )
-                                                                Spacer(Modifier.width(4.dp))
-                                                                Icon(
-                                                                    Icons.Default.Close,
-                                                                    null,
-                                                                    Modifier.size(14.dp),
-                                                                    tint = Color.Red
-                                                                )
-                                                            }
-                                                        }
+                                                    if (isAssigned) {
+                                                        Icon(Icons.Default.Close, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.error)
                                                     } else {
-                                                        Icon(
-                                                            imageVector = Icons.Default.Add,
-                                                            contentDescription = null,
-                                                            tint = Color(0xFF2563EB),
-                                                            modifier = Modifier.size(20.dp)
-                                                        )
+                                                        Icon(Icons.Default.Add, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
                                                     }
                                                 }
                                             }
@@ -350,7 +328,7 @@ fun TaskDetailScreen(
                         },
                         confirmButton = {
                             TextButton(onClick = { showMemberSelector = false }) {
-                                Text("Cerrar", fontWeight = FontWeight.Bold, color = Color(0xFF2563EB))
+                                Text("Cerrar", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                             }
                         }
                     )

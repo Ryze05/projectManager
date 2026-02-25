@@ -114,17 +114,17 @@ fun ProjectDetailScreen(
     var editTaskDescription by remember { mutableStateOf("") }
     var editTaskPriority by remember { mutableStateOf("media") }
 
+    var showEditSectionDialog by remember { mutableStateOf(false) }
+    var sectionToEdit by remember { mutableStateOf<org.example.project.domain.models.Section?>(null) }
+    var editSectionName by remember { mutableStateOf("") }
+    var editSectionPriority by remember { mutableStateOf("media") }
+
     var showInviteDialog by remember { mutableStateOf(false) }
 
     val datePickerState = rememberDatePickerState()
     var showDatePicker by remember { mutableStateOf(false) }
     val timePickerState = rememberTimePickerState(initialHour = 23, initialMinute = 59)
     var showTimePicker by remember { mutableStateOf(false) }
-
-    var showEditSectionDialog by remember { mutableStateOf(false) }
-    var sectionToEdit by remember { mutableStateOf<org.example.project.domain.models.Section?>(null) }
-    var editSectionName by remember { mutableStateOf("") }
-    var editSectionPriority by remember { mutableStateOf("media") }
 
     val priorities = listOf("baja", "media", "alta")
     val currentUserId = remember { SupabaseClient.client.auth.currentUserOrNull()?.id ?: "" }
@@ -155,30 +155,31 @@ fun ProjectDetailScreen(
                 actions = {
                     if (state.isAdmin) {
                         IconButton(onClick = { showInviteDialog = true }) {
-                            Icon(Icons.Default.GroupAdd, "Miembros", tint = Color(0xFF2563EB))
+                            Icon(Icons.Default.GroupAdd, "Miembros", tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF5F6FA))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
         floatingActionButton = {
             if (state.isAdmin) {
                 FloatingActionButton(
                     onClick = { showAddSectionDialog = true },
-                    containerColor = Color(0xFF2563EB),
-                    contentColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = CircleShape
                 ) { Icon(Icons.Default.Add, "Nueva Sección") }
             }
         },
-        containerColor = Color(0xFFF5F6FA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
 
         if (showAddSectionDialog && state.isAdmin) {
             AlertDialog(
                 onDismissRequest = { showAddSectionDialog = false },
-                title = { Text("Nueva Sección", fontWeight = FontWeight.Bold) },
+                title = { Text("Nueva Sección", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
+                containerColor = MaterialTheme.colorScheme.surface,
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         OutlinedTextField(
@@ -200,22 +201,30 @@ fun ProjectDetailScreen(
                     }
                 },
                 confirmButton = {
-                    Button(onClick = {
-                        if (newSectionName.isNotBlank()) {
-                            viewModel.addSection(newSectionName, projectId, selectedPriority)
-                            showAddSectionDialog = false
-                            newSectionName = ""
-                        }
-                    }) { Text("Crear") }
+                    Button(
+                        onClick = {
+                            if (newSectionName.isNotBlank()) {
+                                viewModel.addSection(newSectionName, projectId, selectedPriority)
+                                showAddSectionDialog = false
+                                newSectionName = ""
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) { Text("Crear", color = MaterialTheme.colorScheme.onPrimary) }
                 },
-                dismissButton = { TextButton(onClick = { showAddSectionDialog = false }) { Text("Cancelar") } }
+                dismissButton = {
+                    TextButton(onClick = { showAddSectionDialog = false }) {
+                        Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
             )
         }
 
         if (showEditSectionDialog && state.isAdmin) {
             AlertDialog(
                 onDismissRequest = { showEditSectionDialog = false },
-                title = { Text("Editar Sección", fontWeight = FontWeight.Bold) },
+                title = { Text("Editar Sección", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
+                containerColor = MaterialTheme.colorScheme.surface,
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         OutlinedTextField(
@@ -237,23 +246,29 @@ fun ProjectDetailScreen(
                     }
                 },
                 confirmButton = {
-                    Button(onClick = {
-                        sectionToEdit?.let { section ->
-                            section.id?.let { safeId ->
+                    Button(
+                        onClick = {
+                            sectionToEdit?.id?.let { safeId ->
                                 viewModel.updateSection(safeId, editSectionName, editSectionPriority)
+                                showEditSectionDialog = false
                             }
-                        }
-                        showEditSectionDialog = false
-                    }) { Text("Guardar") }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) { Text("Guardar", color = MaterialTheme.colorScheme.onPrimary) }
                 },
-                dismissButton = { TextButton(onClick = { showEditSectionDialog = false }) { Text("Cancelar") } }
+                dismissButton = {
+                    TextButton(onClick = { showEditSectionDialog = false }) {
+                        Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
             )
         }
 
         if (showAddTaskDialog && state.isAdmin) {
             AlertDialog(
                 onDismissRequest = { showAddTaskDialog = false },
-                title = { Text("Nueva Tarea", fontWeight = FontWeight.Bold) },
+                title = { Text("Nueva Tarea", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
+                containerColor = MaterialTheme.colorScheme.surface,
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         OutlinedTextField(value = newTaskTitle, onValueChange = { newTaskTitle = it }, label = { Text("Título") }, modifier = Modifier.fillMaxWidth())
@@ -263,16 +278,11 @@ fun ProjectDetailScreen(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.CalendarToday,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
+                            Icon(imageVector = Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 text = datePickerState.selectedDateMillis?.let { millis ->
-                                    val date = Instant.fromEpochMilliseconds(millis)
-                                        .toLocalDateTime(TimeZone.currentSystemDefault())
+                                    val date = Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.currentSystemDefault())
                                     "${date.dayOfMonth}/${date.monthNumber}/${date.year}"
                                 } ?: "Fecha de entrega"
                             )
@@ -282,48 +292,42 @@ fun ProjectDetailScreen(
                                 FilterChip(
                                     selected = newTaskPriority == p,
                                     onClick = { newTaskPriority = p },
-                                    label = { Text(p.capitalize()) }
+                                    label = { Text(p.replaceFirstChar { it.uppercase() }) }
                                 )
                             }
                         }
                     }
                 },
                 confirmButton = {
-                    Button(onClick = {
-                        if (newTaskTitle.isNotBlank()) {
-                            val isoDate = combineDateTimeToIso(datePickerState.selectedDateMillis, timePickerState.hour, timePickerState.minute)
-                            viewModel.addTask(newTaskTitle, selectedSectionId!!, newTaskPriority, newTaskDescription, isoDate)
-                            showAddTaskDialog = false
-                            newTaskTitle = ""
-                        }
-                    }) { Text("Guardar") }
+                    Button(
+                        onClick = {
+                            if (newTaskTitle.isNotBlank()) {
+                                val isoDate = combineDateTimeToIso(datePickerState.selectedDateMillis, timePickerState.hour, timePickerState.minute)
+                                viewModel.addTask(newTaskTitle, selectedSectionId!!, newTaskPriority, newTaskDescription, isoDate)
+                                showAddTaskDialog = false
+                                newTaskTitle = ""
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) { Text("Guardar", color = MaterialTheme.colorScheme.onPrimary) }
                 },
-                dismissButton = { TextButton(onClick = { showAddTaskDialog = false }) { Text("Cancelar") } }
+                dismissButton = {
+                    TextButton(onClick = { showAddTaskDialog = false }) {
+                        Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
             )
         }
 
         if (showEditTaskDialog && state.isAdmin) {
             AlertDialog(
                 onDismissRequest = { showEditTaskDialog = false },
-                title = { Text("Editar Tarea", fontWeight = FontWeight.Bold) },
+                title = { Text("Editar Tarea", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
+                containerColor = MaterialTheme.colorScheme.surface,
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        OutlinedTextField(
-                            value = editTaskTitle,
-                            onValueChange = { editTaskTitle = it },
-                            label = { Text("Título") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-
-                        OutlinedTextField(
-                            value = editTaskDescription,
-                            onValueChange = { editTaskDescription = it },
-                            label = { Text("Descripción") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-
+                        OutlinedTextField(value = editTaskTitle, onValueChange = { editTaskTitle = it }, label = { Text("Título") }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = editTaskDescription, onValueChange = { editTaskDescription = it }, label = { Text("Descripción") }, modifier = Modifier.fillMaxWidth())
                         OutlinedButton(
                             onClick = { showDatePicker = true },
                             modifier = Modifier.fillMaxWidth(),
@@ -338,8 +342,6 @@ fun ProjectDetailScreen(
                                 } ?: taskToEdit?.dueDate?.take(10) ?: "Cambiar fecha"
                             )
                         }
-
-                        Text("Prioridad", style = MaterialTheme.typography.labelMedium)
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             priorities.forEach { p ->
                                 FilterChip(
@@ -353,21 +355,13 @@ fun ProjectDetailScreen(
                 },
                 confirmButton = {
                     Button(
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
                         onClick = {
                             taskToEdit?.let { task ->
-                                // Si el usuario seleccionó una nueva fecha, la combinamos.
-                                // Si no, mantenemos la original (task.dueDate)
                                 val finalDate = if (datePickerState.selectedDateMillis != null) {
-                                    combineDateTimeToIso(
-                                        datePickerState.selectedDateMillis,
-                                        timePickerState.hour,
-                                        timePickerState.minute
-                                    )
+                                    combineDateTimeToIso(datePickerState.selectedDateMillis, timePickerState.hour, timePickerState.minute)
                                 } else {
                                     task.dueDate
                                 }
-
                                 viewModel.updateTask(
                                     taskId = task.id!!,
                                     title = editTaskTitle,
@@ -378,12 +372,13 @@ fun ProjectDetailScreen(
                                 )
                             }
                             showEditTaskDialog = false
-                        }
-                    ) { Text("Guardar") }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) { Text("Guardar", color = MaterialTheme.colorScheme.onPrimary) }
                 },
                 dismissButton = {
                     TextButton(onClick = { showEditTaskDialog = false }) {
-                        Text("Cancelar", color = Color.Gray)
+                        Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             )
@@ -394,7 +389,6 @@ fun ProjectDetailScreen(
                 confirmButton = { TextButton(onClick = { showDatePicker = false; showTimePicker = true }) { Text("Siguiente") } }
             ) { DatePicker(state = datePickerState) }
         }
-
         if (showTimePicker) {
             AlertDialog(onDismissRequest = { showTimePicker = false },
                 confirmButton = { TextButton(onClick = { showTimePicker = false }) { Text("OK") } },
@@ -406,20 +400,21 @@ fun ProjectDetailScreen(
             LaunchedEffect(Unit) { viewModel.loadAllProfiles() }
             AlertDialog(
                 onDismissRequest = { showInviteDialog = false },
-                title = { Text("Gestionar equipo", fontWeight = FontWeight.Bold) },
+                containerColor = MaterialTheme.colorScheme.surface,
+                title = { Text("Gestionar equipo", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                 text = {
                     Box(modifier = Modifier.heightIn(max = 400.dp)) {
                         LazyColumn {
                             items(state.allUsers) { user ->
                                 val isMember = state.projectMembers.any { it.id == user.id }
                                 Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Text(user.fullName, Modifier.weight(1f))
+                                    Text(user.fullName, Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurface)
                                     IconButton(onClick = {
                                         if (isMember) viewModel.removeMember(user.id, projectId)
                                         else viewModel.addMember(user.id, projectId)
                                     }) {
                                         Icon(if (isMember) Icons.Default.RemoveCircle else Icons.Default.AddCircle,
-                                            contentDescription = null, tint = if (isMember) Color.Red else Color(0xFF2563EB))
+                                            contentDescription = null, tint = if (isMember) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
                                     }
                                 }
                             }
@@ -431,7 +426,9 @@ fun ProjectDetailScreen(
         }
 
         if (state.isLoading) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Color(0xFF2563EB)) }
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
         } else {
             val filteredSections = remember(state.sections, searchQuery) {
                 if (searchQuery.isBlank()) state.sections
@@ -452,11 +449,11 @@ fun ProjectDetailScreen(
                         onValueChange = { searchQuery = it },
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { Text("Buscar tareas...") },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFFF1F5F9),
-                            unfocusedContainerColor = Color(0xFFF1F5F9),
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                             unfocusedBorderColor = Color.Transparent
                         )
                     )
@@ -478,9 +475,7 @@ fun ProjectDetailScreen(
                                 showEditSectionDialog = true
                             },
                             onDeleteSection = {
-                                section.id?.let { safeId ->
-                                    viewModel.deleteSection(safeId)
-                                }
+                                section.id?.let { safeId -> viewModel.deleteSection(safeId) }
                             }
                         )
                     }
@@ -496,7 +491,9 @@ fun ProjectDetailScreen(
                                 .padding(vertical = 4.dp)
                                 .alpha(if (canToggle) 1f else 0.6f)
                                 .clickable { onTaskClick(task.id!!, projectName) },
-                            colors = CardDefaults.cardColors(containerColor = if (task.isCompleted) Color(0xFFF1F5F9) else Color.White),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (task.isCompleted) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
+                            ),
                             shape = RoundedCornerShape(16.dp),
                             elevation = CardDefaults.cardElevation(if (task.isCompleted) 0.dp else 2.dp)
                         ) {
@@ -508,7 +505,7 @@ fun ProjectDetailScreen(
                                     Icon(
                                         imageVector = if (task.isCompleted) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
                                         contentDescription = null,
-                                        tint = if (canToggle) Color(0xFF2563EB) else Color(0xFF94A3B8)
+                                        tint = if (canToggle) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
 
@@ -519,6 +516,7 @@ fun ProjectDetailScreen(
                                             style = MaterialTheme.typography.bodyLarge,
                                             fontWeight = FontWeight.Bold,
                                             textDecoration = if (task.isCompleted) TextDecoration.LineThrough else null,
+                                            color = if (task.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                                             modifier = Modifier.weight(1f, fill = false)
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
@@ -541,12 +539,12 @@ fun ProjectDetailScreen(
                                     }
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(Icons.Default.CalendarToday, null, modifier = Modifier.size(12.dp), tint = Color.Gray)
+                                        Icon(Icons.Default.CalendarToday, null, modifier = Modifier.size(12.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text(task.dueDate?.take(10) ?: "Sin fecha", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                                        Text(task.dueDate?.take(10) ?: "Sin fecha", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         if (isMine) {
                                             Spacer(modifier = Modifier.width(12.dp))
-                                            Text("• Asignada a ti", style = MaterialTheme.typography.labelSmall, color = Color(0xFF2563EB), fontWeight = FontWeight.Medium)
+                                            Text("• Asignada a ti", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
                                         }
                                     }
                                 }
@@ -554,11 +552,15 @@ fun ProjectDetailScreen(
                                 if (state.isAdmin) {
                                     Box {
                                         IconButton(onClick = { showMenu = true }) {
-                                            Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = Color.LightGray)
+                                            Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
-                                        DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                                        DropdownMenu(
+                                            expanded = showMenu,
+                                            onDismissRequest = { showMenu = false },
+                                            containerColor = MaterialTheme.colorScheme.surface
+                                        ) {
                                             DropdownMenuItem(
-                                                text = { Text("Editar tarea") },
+                                                text = { Text("Editar tarea", color = MaterialTheme.colorScheme.onSurface) },
                                                 onClick = {
                                                     showMenu = false
                                                     taskToEdit = task
@@ -569,7 +571,7 @@ fun ProjectDetailScreen(
                                                 }
                                             )
                                             DropdownMenuItem(
-                                                text = { Text("Eliminar", color = Color.Red) },
+                                                text = { Text("Eliminar", color = MaterialTheme.colorScheme.error) },
                                                 onClick = {
                                                     showMenu = false
                                                     viewModel.deleteTask(task.id!!)
