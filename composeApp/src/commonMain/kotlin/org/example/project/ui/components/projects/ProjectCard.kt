@@ -55,7 +55,7 @@ fun ProjectCard(project: Project, navController: NavController) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(vertical = 8.dp)
             .clickable {
                 navController.navigate(Screen.ProjectDetails.createRoute(project.id, project.title))
             }

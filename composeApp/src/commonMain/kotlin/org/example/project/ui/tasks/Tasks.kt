@@ -1,102 +1,91 @@
 package org.example.project.ui.tasks
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import org.example.project.domain.models.Task
-import org.example.project.ui.Tasks.TasksViewModel
+import io.github.jan.supabase.auth.auth
+import org.example.project.network.SupabaseClient
+import org.example.project.ui.components.task.AgendaTaskItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TasksScreen(
-    viewModel: TasksViewModel
-) {
-    val state = viewModel.state.value
+fun TasksScreen(viewModel: TasksViewModel) {
+    val state by viewModel.state
+    val currentUserId = remember { SupabaseClient.client.auth.currentUserOrNull()?.id ?: "" }
+
+    LaunchedEffect(currentUserId) {
+        if (currentUserId.isNotEmpty()) {
+            viewModel.loadTasks(currentUserId)
+        }
+    }
+
+    var expanded by remember { mutableStateOf(false) }
 
     val projectNames = remember(state.tasks) {
         listOf("Todos los proyectos") + state.tasks.mapNotNull { it.projectTitle }.distinct()
     }
 
-    var expanded by remember { mutableStateOf(false) }
-    var selectedProjectFilter by remember { mutableStateOf(projectNames.first()) }
+    var selectedProjectFilter by remember { mutableStateOf("Todos los proyectos") }
 
     val groupedTasks = remember(state.tasks, selectedProjectFilter) {
-        val filteredByProject = if (selectedProjectFilter == "Todos los proyectos") {
+        val filtered = if (selectedProjectFilter == "Todos los proyectos") {
             state.tasks
         } else {
             state.tasks.filter { it.projectTitle == selectedProjectFilter }
         }
-        filteredByProject.groupBy { it.projectTitle ?: "Otros" }
+        filtered.groupBy { it.projectTitle ?: "Otros Proyectos" }
     }
 
-    // --- ESTADO PARA MOSTRAR LA VENTANA DE CREAR TAREA ---
-    var showCreateDialog by remember { mutableStateOf(false) }
-
     Scaffold(
-        floatingActionButton = {
-            // MAGIA: El botón solo sale si NO estamos en la agenda global (0L)
-            if (viewModel.currentSectionId != 0L) {
-                FloatingActionButton(
-                    onClick = { showCreateDialog = true },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White,
-                    shape = CircleShape
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Nueva Tarea")
-                }
-            }
-        },
         containerColor = Color(0xFFF5F6FA)
     ) { padding ->
-
-        // --- COMPONENTE DEL DIÁLOGO ---
-        if (showCreateDialog) {
-            CreateTaskDialog(
-                onDismiss = { showCreateDialog = false },
-                onConfirm = { title, desc, prio, date ->
-                    viewModel.createTask(title, desc, prio, date)
-                    showCreateDialog = false
-                }
-            )
-        }
-
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .padding(horizontal = 20.dp)
-        ) {
-            Spacer(modifier = Modifier.height(20.dp))
-
+        Column(modifier = Modifier.padding(padding).fillMaxSize().padding(horizontal = 20.dp)) {
             Text(
-                text = if (viewModel.currentSectionId == 0L) "Mi Agenda" else "Tareas de Sección",
+                text = if (viewModel.currentSectionId == 0L) "Mi Agenda" else "Tareas",
                 style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF1E293B)
             )
-
-            Text(
-                text = "Organiza tu día a día",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
-            )
+            Text("Gestiona tus responsabilidades personales", color = Color.Gray)
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            if (projectNames.size > 1 && !state.isLoading && viewModel.currentSectionId == 0L) {
+            if (projectNames.size > 1 && viewModel.currentSectionId == 0L) {
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = { expanded = !expanded }
@@ -105,16 +94,13 @@ fun TasksScreen(
                         value = selectedProjectFilter,
                         onValueChange = {},
                         readOnly = true,
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = Color.LightGray,
                             focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White
+                            unfocusedContainerColor = Color.White,
+                            unfocusedBorderColor = Color.Transparent
                         )
                     )
                     ExposedDropdownMenu(
@@ -122,11 +108,11 @@ fun TasksScreen(
                         onDismissRequest = { expanded = false },
                         modifier = Modifier.background(Color.White)
                     ) {
-                        projectNames.forEach { projectName ->
+                        projectNames.forEach { name ->
                             DropdownMenuItem(
-                                text = { Text(projectName) },
+                                text = { Text(name) },
                                 onClick = {
-                                    selectedProjectFilter = projectName
+                                    selectedProjectFilter = name
                                     expanded = false
                                 }
                             )
@@ -137,196 +123,44 @@ fun TasksScreen(
             }
 
             if (state.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                Box(Modifier.fillMaxSize(), Alignment.Center) {
+                    CircularProgressIndicator(color = Color(0xFF2563EB))
                 }
             } else if (state.tasks.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(Modifier.fillMaxSize(), Alignment.Center) {
                     Text("No tienes tareas pendientes 🎉", color = Color.Gray)
                 }
             } else {
                 LazyColumn(
-                    contentPadding = PaddingValues(bottom = 80.dp, top = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
-                    groupedTasks.forEach { (projectTitle, tasksInProject) ->
-                        // Si estamos en la agenda global mostramos los nombres de proyectos
-                        if (viewModel.currentSectionId == 0L) {
-                            item {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Box(modifier = Modifier.size(8.dp).background(Color(0xFF2563EB), CircleShape))
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = projectTitle,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.Gray
-                                    )
-                                }
-                            }
-                        }
-
-                        items(tasksInProject) { task ->
-                            Box(modifier = Modifier.padding(horizontal = 4.dp)) {
-                                TaskItem(
-                                    task = task,
-                                    onCheckedChange = { viewModel.onTaskChecked(task) }
+                    groupedTasks.forEach { (project, tasks) ->
+                        item {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(top = 12.dp, start = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(modifier = Modifier.size(4.dp, 16.dp).background(Color(0xFF2563EB), CircleShape))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = project.uppercase(),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = Color(0xFF2563EB),
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
                         }
-                    }
-                }
-            }
-        }
-    }
-}
 
-// --- INTERFAZ DE LA TARJETA DE TAREA ---
-@Composable
-fun TaskItem(task: Task, onCheckedChange: (Boolean) -> Unit) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(0.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = task.isCompleted,
-                onCheckedChange = onCheckedChange,
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary,
-                    uncheckedColor = Color.Gray
-                )
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = task.title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-                    color = if (task.isCompleted) Color.Gray else Color.Black
-                )
-                task.dueDate?.let { date ->
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.CalendarToday,
-                            contentDescription = null,
-                            modifier = Modifier.size(12.dp),
-                            tint = Color.Gray
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = date,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-// --- INTERFAZ DEL DIÁLOGO DE CREACIÓN ---
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CreateTaskDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (String, String, String, String) -> Unit
-) {
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var priority by remember { mutableStateOf("media") }
-    var dueDate by remember { mutableStateOf("") }
-
-    var expanded by remember { mutableStateOf(false) }
-    val priorities = listOf("baja", "media", "alta")
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Nueva Tarea", fontWeight = FontWeight.Bold) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Título *") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Descripción (opcional)") },
-                    maxLines = 3,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                // Menú desplegable para Prioridad
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = !expanded }
-                ) {
-                    OutlinedTextField(
-                        value = priority.replaceFirstChar { it.uppercase() },
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Prioridad") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier.background(Color.White)
-                    ) {
-                        priorities.forEach { prio ->
-                            DropdownMenuItem(
-                                text = { Text(prio.replaceFirstChar { it.uppercase() }) },
-                                onClick = {
-                                    priority = prio
-                                    expanded = false
-                                }
+                        items(tasks, key = { it.id ?: 0L }) { task ->
+                            AgendaTaskItem(
+                                task = task,
+                                onCheckedChange = { viewModel.onTaskChecked(task) }
                             )
                         }
                     }
                 }
-
-                OutlinedTextField(
-                    value = dueDate,
-                    onValueChange = { dueDate = it },
-                    label = { Text("Fecha (ej. 2026-03-10)") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    if (title.isNotBlank()) {
-                        onConfirm(title, description, priority, dueDate)
-                    }
-                },
-                enabled = title.isNotBlank(), // El botón se apaga si no hay título
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text("Crear")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancelar", color = Color.Gray)
-            }
-        },
-        containerColor = Color.White
-    )
+        }
+    }
 }

@@ -1,83 +1,67 @@
-package org.example.project.ui.Tasks
+package org.example.project.ui.tasks
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import org.example.project.domain.models.ProjectTitleRelation
+import org.example.project.domain.models.SectionRelation
 import org.example.project.domain.models.Task
+import org.example.project.domain.models.Task2
 import org.example.project.repository.TaskRepository
 
 data class TasksState(
-    val tasks: List<Task> = emptyList(),
+    val tasks: List<Task2> = emptyList(),
     val isLoading: Boolean = true
 )
 
-// CAMBIO CLAVE: Cambiamos 'private val' por 'val' para poder leer currentSectionId en la UI
 class TasksViewModel(val currentSectionId: Long) : ViewModel() {
 
     private val repo = TaskRepository()
     private val _state = mutableStateOf(TasksState())
     val state: State<TasksState> = _state
 
-    init {
-        loadTasks()
-    }
-
-    private fun loadTasks() {
+    fun loadTasks(userId: String) {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
-            val list = if (currentSectionId == 0L) {
-                repo.getAllTasksForAgenda()
+            val list: List<Task2> = if (currentSectionId == 0L) {
+                repo.getProjectSectionsWithTasksAgenda(userId)
             } else {
-                repo.getTasksBySection(currentSectionId)
+                repo.getTasksBySectionFiltered(currentSectionId, userId)
             }
 
             _state.value = TasksState(tasks = list, isLoading = false)
         }
     }
 
-    fun onTaskChecked(task: Task) {
+    fun onTaskChecked(task: Task2) {
         viewModelScope.launch {
+            val newStatus = !task.isCompleted
             val updatedList = _state.value.tasks.map {
-                if (it.id == task.id) it.copy(isCompleted = !it.isCompleted) else it
+                if (it.id == task.id) it.copy(isCompleted = newStatus) else it
             }
             _state.value = _state.value.copy(tasks = updatedList)
 
-            // Pasamos el ID y el nuevo valor invertido
-            task.id?.let {
-                repo.toggleTaskCompletion(it, !task.isCompleted)
-            }
+            task.id?.let { repo.toggleTaskCompletion(it, newStatus) }
         }
     }
 
-    // --- NUEVA FUNCIÓN PARA CREAR LA TAREA ---
-    fun createTask(title: String, description: String, priority: String, dueDate: String) {
+    /*fun createTask(title: String, description: String, priority: String, dueDate: String) {
         viewModelScope.launch {
-            // Solo creamos si estamos dentro de una sección real
             if (currentSectionId != 0L) {
-                _state.value = _state.value.copy(isLoading = true)
-
-                // Si dejaron esto en blanco, lo guardamos como null
-                val finalDesc = if (description.isBlank()) null else description
-                val finalDate = if (dueDate.isBlank()) null else dueDate
-
                 try {
                     repo.createTask(
                         title = title,
-                        description = finalDesc,
+                        description = description.ifBlank { null },
                         sectionId = currentSectionId,
                         priority = priority,
-                        dueDate = finalDate
+                        dueDate = dueDate.ifBlank { null }
                     )
-                    // Recargamos la lista automáticamente para que aparezca
                     loadTasks()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    _state.value = _state.value.copy(isLoading = false)
-                }
+                } catch (e: Exception) { e.printStackTrace() }
             }
         }
-    }
+    }*/
 }

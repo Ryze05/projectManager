@@ -9,16 +9,11 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector, val targetRoute: String = route) {
-    // Auth
     data object Login : Screen("login", "Login", Icons.Default.Home)
     data object Register : Screen("register", "Registro", Icons.Default.Home)
-
     data object Home : Screen("home", "Dashboard", Icons.Default.Home)
     data object Projects : Screen("projects", "Proyectos", Icons.Default.Folder)
-
-    // Aquí definimos la ruta especial para Agenda
     data object Tasks : Screen("tasks", "Agenda", Icons.Default.DateRange, targetRoute = "tasks_screen/0")
-
     data object Profile : Screen("profile", "Perfil", Icons.Default.Person)
 
     data object Chat : Screen("chat_screen/{projectId}", "Chat", Icons.Default.Comment) {

@@ -20,7 +20,7 @@ import org.example.project.repository.ProfileRepository
 import org.example.project.repository.ProjectRepository
 import org.example.project.repository.SectionRepository
 import org.example.project.repository.TaskRepository
-import org.example.project.ui.Tasks.TasksViewModel
+import org.example.project.ui.tasks.TasksViewModel
 import org.example.project.ui.auth.AuthViewModel
 import org.example.project.ui.auth.LoginScreen
 import org.example.project.ui.auth.RegisterScreen
@@ -70,10 +70,8 @@ fun App(
         val profileRepository = remember { ProfileRepository() }
         val viewModelProfile = remember { ProfileViewModel(authRepository, profileRepository) }
 
-        // --- ESTADOS PARA EL MENÚ DE CHAT ---
         var chatProjectsList by remember { mutableStateOf<List<Project>>(emptyList()) }
 
-        // --- 1. LÓGICA DE SESIÓN PERSISTENTE ---
         var isLoadingSession by remember { mutableStateOf(true) }
         var startDestination by remember { mutableStateOf(Screen.Login.route) }
 
@@ -85,7 +83,6 @@ fun App(
             isLoadingSession = false
         }
 
-        // --- 2. GESTIÓN DE LA BARRA INFERIOR ---
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
 
@@ -259,7 +256,6 @@ fun App(
                         )
                     }
 
-                    // Alias para evitar crash si algo navega a "tasks" directamente
                     composable(Screen.Tasks.route) {
                         LaunchedEffect(Unit) {
                             navController.navigate("tasks_screen/0") {

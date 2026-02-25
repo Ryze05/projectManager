@@ -50,7 +50,6 @@ class ProfileViewModel(
         }
     }*/
 
-    // Dentro de ProfileViewModel.kt
     fun loadProfileData(userId: String) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
@@ -59,8 +58,6 @@ class ProfileViewModel(
                 val pCount = profileRepository.getProjectCount(userId)
                 val tCount = profileRepository.getTaskCount(userId)
 
-                // --- ESTO ES LO QUE TE FALTA ---
-                // Solo cargamos la lista si el perfil actual es Admin
                 val users = if (profile?.isAdmin == true) {
                     profileRepository.getAllProfiles().filter { it.id != userId }
                 } else {
@@ -74,7 +71,7 @@ class ProfileViewModel(
                     isAdmin = profile?.isAdmin ?: false,
                     totalProjects = pCount,
                     totalTasks = tCount,
-                    allUsers = users, // <--- ASIGNAR LA LISTA AQUÍ
+                    allUsers = users,
                     isLoading = false
                 ) }
             } catch (e: Exception) {
@@ -88,13 +85,10 @@ class ProfileViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isUploading = true) }
             try {
-                // 1. Sube al Storage y obtén la URL con timestamp
                 val newUrl = profileRepository.uploadAvatar(userId, imageBytes)
 
-                // 2. Guarda esa URL en la tabla 'profile' de la BD
                 profileRepository.updateProfile(userId, null, newUrl)
 
-                // 3. Actualiza el estado local inmediatamente
                 _state.update { it.copy(
                     avatarUrl = newUrl,
                     isUploading = false

@@ -25,11 +25,9 @@ class ChatViewModel(private val projectId: Long) : ViewModel() {
         viewModelScope.launch {
             currentUserName = authRepo.getCurrentUserName() ?: "Usuario"
 
-            // Cargamos el historial antiguo
             val history = repo.getHistoricalMessages()
             messages.addAll(history)
 
-            // Escuchamos los nuevos
             try {
                 repo.listenToMessages().collect { newMessage ->
                     messages.add(newMessage)

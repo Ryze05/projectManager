@@ -7,6 +7,7 @@ import org.example.project.domain.models.Profile
 import org.example.project.domain.models.Project
 import org.example.project.domain.models.ProjectMember
 import org.example.project.domain.models.Section
+import org.example.project.domain.models.Task
 import org.example.project.network.SupabaseClient
 
 class ProjectRepository {
@@ -42,7 +43,7 @@ class ProjectRepository {
         SupabaseClient.client.postgrest["project"].insert(newProject)
     }
 
-    suspend fun getProjectSectionsWithTasks(projectId: Long, userId: String, isAdmin: Boolean): List<Section> {
+    /*suspend fun getProjectSectionsWithTasks(projectId: Long, userId: String, isAdmin: Boolean): List<Section> {
         return try {
             val query = if (isAdmin) {
                 """
@@ -74,6 +75,29 @@ class ProjectRepository {
                 }
                 .decodeList<Section>()
         } catch (e: Exception) {
+            emptyList()
+        }
+    }*/
+
+    suspend fun getProjectSectionsWithTasksProject(projectId: Long, userId: String): List<Section> {
+        return try {
+            val query = """
+            *, 
+            task(
+                *, 
+                profiles:profile(*)
+            )
+        """.trimIndent()
+
+            SupabaseClient.client.from("section")
+                .select(columns = Columns.raw(query)) {
+                    filter {
+                        eq("project_id", projectId)
+                    }
+                }
+                .decodeList<Section>()
+        } catch (e: Exception) {
+            println("Error cargando proyecto: ${e.message}")
             emptyList()
         }
     }
@@ -125,7 +149,7 @@ class ProjectRepository {
     suspend fun getMyProjects(): List<Project> {
         return try {
             SupabaseClient.client
-                .from("project") // Asegúrate de que tu tabla en Supabase se llama "project"
+                .from("project")
                 .select()
                 .decodeList<Project>()
         } catch (e: Exception) {

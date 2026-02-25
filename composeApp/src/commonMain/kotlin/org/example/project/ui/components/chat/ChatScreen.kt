@@ -110,7 +110,7 @@ fun MessageBubble(message: Message, currentUserName: String) {
         horizontalArrangement = if (isMine) Arrangement.End else Arrangement.Start
     ) {
         Column(
-            horizontalAlignment = if (isMine) Alignment.End else Alignment.Start // Solucionado el error rojo aquí
+            horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
         ) {
             Text(
                 text = message.userName,

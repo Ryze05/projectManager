@@ -2,6 +2,7 @@ package org.example.project.ui.taskDetail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -14,7 +15,7 @@ class TaskDetailViewModel(
     private val projectRepository: ProjectRepository,
     private val authRepository: AuthRepository
 ): ViewModel() {
-    private val _state = kotlinx.coroutines.flow.MutableStateFlow(TaskDetailState())
+    private val _state = MutableStateFlow(TaskDetailState())
     val state = _state.asStateFlow()
 
     fun loadTaskData(taskId: Long, projectId: Long) {

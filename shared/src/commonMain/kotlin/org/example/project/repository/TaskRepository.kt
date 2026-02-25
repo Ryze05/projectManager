@@ -2,7 +2,9 @@ package org.example.project.repository
 
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Columns
 import org.example.project.domain.models.Task
+import org.example.project.domain.models.Task2
 import org.example.project.domain.models.TaskAssignment
 import org.example.project.network.SupabaseClient
 
@@ -36,8 +38,6 @@ class TaskRepository {
     }
     suspend fun getAllTasksForAgenda(): List<Task> {
         return try {
-            // Usamos la función RPC de Supabase para que nos devuelva
-            // las tareas junto con el nombre del proyecto (projectTitle)
             SupabaseClient.client
                 .postgrest.rpc("get_my_agenda_tasks")
                 .decodeList<Task>()
@@ -47,23 +47,21 @@ class TaskRepository {
         }
     }
 
-    // 2. OBTENER TAREAS DE UNA SECCIÓN CONCRETA (Para cuando entras desde un proyecto)
-    suspend fun getTasksBySection(sectionId: Long): List<Task> {
+    suspend fun getTasksBySection(sectionId: Long): List<Task2> {
         return try {
-            SupabaseClient.client.from("task")
-                .select {
+            val query = "*, section(name)"
+
+            val response = SupabaseClient.client.from("task")
+                .select(columns = Columns.raw(query)) {
                     filter { eq("section_id", sectionId) }
                 }
-                .decodeList<Task>()
+
+            response.decodeList<Task2>()
         } catch (e: Exception) {
-            e.printStackTrace()
             emptyList()
         }
     }
 
-    // 3. ADAPTADOR PARA EL CHECKBOX
-    // En tu repo ya tienes 'updateTaskCompletion', pero el ViewModel llama a 'toggleTaskCompletion'
-    // Con esta pequeña función hacemos de puente para que no te dé error en rojo.
     suspend fun toggleTaskCompletion(taskId: Long?, isCompleted: Boolean) {
         updateTaskCompletion(taskId, isCompleted)
     }
@@ -79,7 +77,7 @@ class TaskRepository {
     suspend fun getTaskById(taskId: Long): Task? {
         return try {
             SupabaseClient.client.from("task")
-                .select(columns = io.github.jan.supabase.postgrest.query.Columns.raw("""
+                .select(columns = Columns.raw("""
                 *,
                 profiles:profile(*)
             """.trimIndent())) {
@@ -123,6 +121,59 @@ class TaskRepository {
                     eq("id", taskId)
                 }
             }
+        }
+    }
+
+    suspend fun getProjectSectionsWithTasksAgenda(userId: String): List<Task2> {
+        return try {
+            val query = """
+        *,
+        section(
+            name,
+            project(title)
+        ),
+        task_assignment!inner(profile_id)
+    """.trimIndent()
+
+            println("DEBUG: Iniciando consulta de agenda para el usuario: $userId")
+
+            val response = SupabaseClient.client.from("task")
+                .select(columns = Columns.raw(query)) {
+                    filter {
+                        eq("task_assignment.profile_id", userId)
+                    }
+                }
+
+            val tasks = response.decodeList<Task2>()
+            println("DEBUG: Tareas decodificadas: ${tasks.size}")
+
+            tasks
+        } catch (e: Exception) {
+            println("DEBUG: ERROR en la consulta: ${e.message}")
+            emptyList()
+        }
+    }
+
+    suspend fun getTasksBySectionFiltered(sectionId: Long, userId: String): List<Task2> {
+        return try {
+            val query = """
+            *,
+            section(name),
+            task_assignment!inner(profile_id)
+        """.trimIndent()
+
+            val response = SupabaseClient.client.from("task")
+                .select(columns = Columns.raw(query)) {
+                    filter {
+                        eq("section_id", sectionId)
+                        eq("task_assignment.profile_id", userId)
+                    }
+                }
+
+            response.decodeList<Task2>()
+        } catch (e: Exception) {
+            println("ERROR REPO FILTERED TASKS: ${e.message}")
+            emptyList()
         }
     }
 }

@@ -27,9 +27,9 @@ class ProjectDetailsViewModel(
         viewModelScope.launch {
             try {
                 val profile = authRepository.getCurrentUserProfile()
-                val isAdmin = profile?.isAdmin ?: false
+                //val isAdmin = profile?.isAdmin ?: false
 
-                val sectionsWithTasks = projectRepository.getProjectSectionsWithTasks(projectId, userId, isAdmin)
+                val sectionsWithTasks = projectRepository.getProjectSectionsWithTasksProject(projectId, userId)
                 val members = projectRepository.getProjectMembers(projectId)
 
                 _state.update { it.copy(

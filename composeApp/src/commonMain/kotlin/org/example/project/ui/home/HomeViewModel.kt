@@ -48,7 +48,15 @@ class HomeViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isDialogLoading = true, selectedProjectSections = emptyList()) }
             try {
-                val sections = sectionRepository.getSectionsByProject(projectId)
+                val userId = authRepository.getCurrentUserId() ?: return@launch
+                val currentState = _state.value
+
+                val sections = if (currentState.isAdmin) {
+                    sectionRepository.getSectionsByProject(projectId)
+                } else {
+                    sectionRepository.getSectionsWithUserTasks(projectId, userId)
+                }
+
                 _state.update { it.copy(
                     isDialogLoading = false,
                     selectedProjectSections = sections
