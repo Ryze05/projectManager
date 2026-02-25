@@ -116,7 +116,7 @@ fun ProjectsScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 20.dp, vertical = 12.dp)
         ) {
             Text(
                 text = "Proyectos",

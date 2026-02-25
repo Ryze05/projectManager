@@ -88,20 +88,34 @@ fun ProjectSectionHeader(
                     onDismissRequest = { showMenu = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Editar sección") },
+                        text = { Text("Editar sección", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface) },
                         onClick = {
                             showMenu = false
                             onEditSection()
                         },
-                        leadingIcon = { Icon(Icons.Default.Edit, null, Modifier.size(18.dp)) }
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     )
                     DropdownMenuItem(
-                        text = { Text("Eliminar sección", color = Color.Red) },
+                        text = { Text("Eliminar sección", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.error) },
                         onClick = {
                             showMenu = false
                             onDeleteSection()
                         },
-                        leadingIcon = { Icon(Icons.Default.Delete, null, tint = Color.Red, modifier = Modifier.size(18.dp)) }
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     )
                 }
             }

@@ -74,7 +74,7 @@ fun TasksScreen(viewModel: TasksViewModel) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).fillMaxSize().padding(horizontal = 20.dp)) {
+        Column(modifier = Modifier.padding(padding).fillMaxSize().padding(horizontal = 20.dp, vertical = 12.dp)) {
             Text(
                 text = if (viewModel.currentSectionId == 0L) "Mi Agenda" else "Tareas",
                 style = MaterialTheme.typography.headlineLarge,

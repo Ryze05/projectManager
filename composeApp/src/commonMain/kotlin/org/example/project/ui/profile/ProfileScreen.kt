@@ -35,6 +35,7 @@ import org.example.project.repository.AuthRepository
 import org.example.project.ui.components.profile.ProfileHeader
 import org.example.project.ui.components.profile.StatCard
 import org.example.project.ui.components.profile.UserAdminItem
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun ProfileScreen(
@@ -77,123 +78,129 @@ fun ProfileScreen(
         )
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (state.isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = MaterialTheme.colorScheme.primary
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-                contentPadding = PaddingValues(bottom = 32.dp)
-            ) {
-                item {
-                    ProfileHeader(
-                        userName = state.userName,
-                        email = state.email,
-                        avatarUrl = state.avatarUrl,
-                        isUploading = state.isUploading,
-                        onEditPhoto = onPickImage,
-                        onEditName = {
-                            tempName = state.userName
-                            showEditNameDialog = true
-                        }
-                    )
-                }
-
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        StatCard(state.totalTasks.toString(), "TAREAS", Modifier.weight(1f))
-                        StatCard(state.totalProjects.toString(), "PROYECTOS", Modifier.weight(1f))
-                    }
-                }
-
-                if (state.isAdmin) {
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background
+    ) { padding ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(padding)
+                        .padding(vertical = 12.dp),
+                    contentPadding = PaddingValues(bottom = 32.dp)
+                ) {
                     item {
-                        Text(
-                            text = "GESTIÓN DE EQUIPO",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 20.dp, top = 24.dp, bottom = 8.dp)
+                        ProfileHeader(
+                            userName = state.userName,
+                            email = state.email,
+                            avatarUrl = state.avatarUrl,
+                            isUploading = state.isUploading,
+                            onEditPhoto = onPickImage,
+                            onEditName = {
+                                tempName = state.userName
+                                showEditNameDialog = true
+                            }
                         )
                     }
-                    items(state.allUsers) { user ->
-                        UserAdminItem(
-                            name = user.fullName,
-                            email = user.email,
-                            isAdmin = user.isAdmin,
-                            onToggleAdmin = { viewModel.toggleAdminStatus(user.id, it) }
-                        )
-                    }
-                }
 
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "AJUSTES",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(start = 20.dp, top = 8.dp, bottom = 8.dp)
-                    )
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                    ) {
+                    item {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                                .padding(horizontal = 20.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
+                            StatCard(state.totalTasks.toString(), "TAREAS", Modifier.weight(1f))
+                            StatCard(state.totalProjects.toString(), "PROYECTOS", Modifier.weight(1f))
+                        }
+                    }
+
+                    if (state.isAdmin) {
+                        item {
                             Text(
-                                text = "Modo Oscuro",
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                text = "GESTIÓN DE EQUIPO",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 20.dp, top = 24.dp, bottom = 8.dp)
                             )
-                            Switch(
-                                checked = isDarkTheme,
-                                onCheckedChange = onThemeToggle,
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = MaterialTheme.colorScheme.primary,
-                                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
-                                )
+                        }
+                        items(state.allUsers) { user ->
+                            UserAdminItem(
+                                name = user.fullName,
+                                email = user.email,
+                                isAdmin = user.isAdmin,
+                                onToggleAdmin = { viewModel.toggleAdminStatus(user.id, it) }
                             )
                         }
                     }
-                }
 
-                item {
-                    Spacer(modifier = Modifier.height(32.dp))
-                    Button(
-                        onClick = onLogout,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.error
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .height(50.dp),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ExitToApp, null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Cerrar Sesión", fontWeight = FontWeight.Bold)
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "AJUSTES",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 20.dp, top = 8.dp, bottom = 8.dp)
+                        )
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Modo Oscuro",
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Switch(
+                                    checked = isDarkTheme,
+                                    onCheckedChange = onThemeToggle,
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                        checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Button(
+                            onClick = onLogout,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.error
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                                .height(50.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.ExitToApp, null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Cerrar Sesión", fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }

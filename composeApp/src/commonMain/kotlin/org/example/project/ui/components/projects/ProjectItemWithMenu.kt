@@ -56,16 +56,14 @@ fun ProjectItemWithMenu(
             ) {
                 DropdownMenuItem(
                     text = {
-                        Text(
-                            "Editar",
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        Text("Editar proyecto", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
                     },
                     leadingIcon = {
                         Icon(
-                            Icons.Default.Edit,
+                            imageVector = Icons.Default.Edit,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
                         )
                     },
                     onClick = {
@@ -82,16 +80,14 @@ fun ProjectItemWithMenu(
 
                 DropdownMenuItem(
                     text = {
-                        Text(
-                            "Eliminar Proyecto",
-                            color = MaterialTheme.colorScheme.error
-                        )
+                        Text("Eliminar Proyecto", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.error)
                     },
                     leadingIcon = {
                         Icon(
-                            Icons.Default.Delete,
+                            imageVector = Icons.Default.Delete,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(20.dp)
                         )
                     },
                     onClick = {

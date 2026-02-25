@@ -42,8 +42,8 @@ fun ProfileHeader(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 32.dp),
+            .fillMaxWidth(),
+            //.padding(vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(contentAlignment = Alignment.BottomEnd) {

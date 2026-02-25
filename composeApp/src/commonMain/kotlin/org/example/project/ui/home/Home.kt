@@ -76,7 +76,7 @@ fun HomeScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 20.dp)
+                        .padding(horizontal = 20.dp, vertical = 12.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
 
