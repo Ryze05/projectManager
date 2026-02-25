@@ -1,9 +1,11 @@
 package org.example.project.ui.components.projects
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -46,24 +48,57 @@ fun ProjectItemWithMenu(
 
             DropdownMenu(
                 expanded = showOptions,
-                onDismissRequest = { showOptions = false }
+                onDismissRequest = { showOptions = false },
+                containerColor = MaterialTheme.colorScheme.surface,
+                modifier = Modifier
+                    .width(180.dp)
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
             ) {
                 DropdownMenuItem(
-                    text = { Text("Configuración") },
-                    leadingIcon = { Icon(Icons.Default.Settings, null) },
+                    text = {
+                        Text(
+                            "Editar",
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
                     onClick = {
                         showOptions = false
                         showEditDialog = true
-                    }
+                    },
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                 )
-                HorizontalDivider()
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
                 DropdownMenuItem(
-                    text = { Text("Eliminar Proyecto", color = Color.Red) },
-                    leadingIcon = { Icon(Icons.Default.Delete, null, tint = Color.Red) },
+                    text = {
+                        Text(
+                            "Eliminar Proyecto",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    },
                     onClick = {
                         showOptions = false
                         viewModel.deleteProject(project.id!!, userId, currentStatus)
-                    }
+                    },
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                 )
             }
         }

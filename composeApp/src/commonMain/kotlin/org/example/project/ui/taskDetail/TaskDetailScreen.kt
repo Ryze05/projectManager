@@ -52,6 +52,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -201,6 +202,7 @@ fun TaskDetailScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
+
                             Spacer(Modifier.height(12.dp))
 
                             Card(
@@ -289,12 +291,21 @@ fun TaskDetailScreen(
                                                         color = if (isAssigned) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primaryContainer
                                                     ) {
                                                         Box(contentAlignment = Alignment.Center) {
-                                                            Text(
-                                                                text = member.fullName.take(1).uppercase(),
-                                                                style = MaterialTheme.typography.titleMedium,
-                                                                fontWeight = FontWeight.Bold,
-                                                                color = if (isAssigned) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.onPrimaryContainer
-                                                            )
+                                                            if (!member.avatarUrl.isNullOrEmpty()) {
+                                                                coil3.compose.AsyncImage(
+                                                                    model = member.avatarUrl,
+                                                                    contentDescription = "Avatar de ${member.fullName}",
+                                                                    modifier = Modifier.fillMaxSize().clip(CircleShape),
+                                                                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                                                )
+                                                            } else {
+                                                                Text(
+                                                                    text = member.fullName.take(1).uppercase(),
+                                                                    style = MaterialTheme.typography.titleMedium,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    color = if (isAssigned) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.onPrimaryContainer
+                                                                )
+                                                            }
                                                         }
                                                     }
 

@@ -1,5 +1,7 @@
 package org.example.project.ui.projectDetail
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +26,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
@@ -42,6 +47,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -70,6 +76,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -398,30 +405,118 @@ fun ProjectDetailScreen(
 
         if (showInviteDialog && state.isAdmin) {
             LaunchedEffect(Unit) { viewModel.loadAllProfiles() }
+
             AlertDialog(
                 onDismissRequest = { showInviteDialog = false },
+                shape = RoundedCornerShape(28.dp),
                 containerColor = MaterialTheme.colorScheme.surface,
-                title = { Text("Gestionar equipo", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
+                title = {
+                    Column {
+                        Text(
+                            text = "Gestionar equipo",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "${state.projectMembers.size} miembros actuales",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
                 text = {
-                    Box(modifier = Modifier.heightIn(max = 400.dp)) {
-                        LazyColumn {
-                            items(state.allUsers) { user ->
-                                val isMember = state.projectMembers.any { it.id == user.id }
-                                Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Text(user.fullName, Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurface)
-                                    IconButton(onClick = {
-                                        if (isMember) viewModel.removeMember(user.id, projectId)
-                                        else viewModel.addMember(user.id, projectId)
-                                    }) {
-                                        Icon(if (isMember) Icons.Default.RemoveCircle else Icons.Default.AddCircle,
-                                            contentDescription = null, tint = if (isMember) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
+                    Column(modifier = Modifier.fillMaxWidth().heightIn(max = 450.dp)) {
+                        Text(
+                            text = "Añade o elimina colaboradores del proyecto.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
+                        if (state.allUsers.isEmpty()) {
+                            Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                            }
+                        } else {
+                            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                items(state.allUsers, key = { it.id }) { user ->
+                                    val isMember = state.projectMembers.any { it.id == user.id }
+
+                                    Surface(
+                                        onClick = {
+                                            if (isMember) viewModel.removeMember(user.id, projectId)
+                                            else viewModel.addMember(user.id, projectId)
+                                        },
+                                        shape = RoundedCornerShape(16.dp),
+                                        color = if (isMember) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
+                                        border = BorderStroke(
+                                            width = 1.dp,
+                                            color = if (isMember) Color.Transparent else MaterialTheme.colorScheme.outlineVariant
+                                        )
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Surface(
+                                                modifier = Modifier.size(40.dp),
+                                                shape = CircleShape,
+                                                color = if (isMember) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primaryContainer
+                                            ) {
+                                                Box(contentAlignment = Alignment.Center) {
+                                                    if (!user.avatarUrl.isNullOrEmpty()) {
+                                                        coil3.compose.AsyncImage(
+                                                            model = user.avatarUrl,
+                                                            contentDescription = "Avatar de ${user.fullName}",
+                                                            modifier = Modifier.fillMaxSize().clip(CircleShape),
+                                                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                                        )
+                                                    } else {
+                                                        Text(
+                                                            text = user.fullName.take(1).uppercase(),
+                                                            style = MaterialTheme.typography.titleMedium,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = if (isMember) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.onPrimaryContainer
+                                                        )
+                                                    }
+                                                }
+                                            }
+
+                                            Spacer(Modifier.width(12.dp))
+
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    text = user.fullName,
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = if (isMember) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+                                                )
+                                                Text(
+                                                    text = user.email,
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+
+                                            if (isMember) {
+                                                Icon(Icons.Default.Close, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.error)
+                                            } else {
+                                                Icon(Icons.Default.Add, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 },
-                confirmButton = { TextButton(onClick = { showInviteDialog = false }) { Text("Listo") } }
+                confirmButton = {
+                    TextButton(onClick = { showInviteDialog = false }) {
+                        Text("Listo", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
             )
         }
 
@@ -557,10 +652,27 @@ fun ProjectDetailScreen(
                                         DropdownMenu(
                                             expanded = showMenu,
                                             onDismissRequest = { showMenu = false },
-                                            containerColor = MaterialTheme.colorScheme.surface
+                                            containerColor = MaterialTheme.colorScheme.surface,
+                                            modifier = Modifier
+                                                .width(180.dp)
+                                                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
                                         ) {
                                             DropdownMenuItem(
-                                                text = { Text("Editar tarea", color = MaterialTheme.colorScheme.onSurface) },
+                                                text = {
+                                                    Text(
+                                                        "Editar tarea",
+                                                        style = MaterialTheme.typography.bodyLarge,
+                                                        color = MaterialTheme.colorScheme.onSurface
+                                                    )
+                                                },
+                                                leadingIcon = {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Edit,
+                                                        contentDescription = null,
+                                                        tint = MaterialTheme.colorScheme.primary,
+                                                        modifier = Modifier.size(20.dp)
+                                                    )
+                                                },
                                                 onClick = {
                                                     showMenu = false
                                                     taskToEdit = task
@@ -568,14 +680,36 @@ fun ProjectDetailScreen(
                                                     editTaskDescription = task.description ?: ""
                                                     editTaskPriority = task.priority
                                                     showEditTaskDialog = true
-                                                }
+                                                },
+                                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                             )
+
+                                            HorizontalDivider(
+                                                modifier = Modifier.padding(horizontal = 12.dp),
+                                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                            )
+
                                             DropdownMenuItem(
-                                                text = { Text("Eliminar", color = MaterialTheme.colorScheme.error) },
+                                                text = {
+                                                    Text(
+                                                        "Eliminar",
+                                                        style = MaterialTheme.typography.bodyLarge,
+                                                        color = MaterialTheme.colorScheme.error
+                                                    )
+                                                },
+                                                leadingIcon = {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Delete,
+                                                        contentDescription = null,
+                                                        tint = MaterialTheme.colorScheme.error,
+                                                        modifier = Modifier.size(20.dp)
+                                                    )
+                                                },
                                                 onClick = {
                                                     showMenu = false
                                                     viewModel.deleteTask(task.id!!)
-                                                }
+                                                },
+                                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                             )
                                         }
                                     }

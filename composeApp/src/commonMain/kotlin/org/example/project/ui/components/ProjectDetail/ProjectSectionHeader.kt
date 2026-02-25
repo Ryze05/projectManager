@@ -9,6 +9,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material3.DropdownMenu
@@ -91,7 +93,7 @@ fun ProjectSectionHeader(
                             showMenu = false
                             onEditSection()
                         },
-                        leadingIcon = { Icon(Icons.Default.AddCircle, null, Modifier.size(18.dp)) }
+                        leadingIcon = { Icon(Icons.Default.Edit, null, Modifier.size(18.dp)) }
                     )
                     DropdownMenuItem(
                         text = { Text("Eliminar sección", color = Color.Red) },
@@ -99,7 +101,7 @@ fun ProjectSectionHeader(
                             showMenu = false
                             onDeleteSection()
                         },
-                        leadingIcon = { Icon(Icons.Default.RemoveCircle, null, tint = Color.Red, modifier = Modifier.size(18.dp)) }
+                        leadingIcon = { Icon(Icons.Default.Delete, null, tint = Color.Red, modifier = Modifier.size(18.dp)) }
                     )
                 }
             }
