@@ -108,6 +108,7 @@ fun ProfileScreen(
                                 showEditNameDialog = true
                             }
                         )
+                        Spacer(modifier = Modifier.height(20.dp))
                     }
 
                     item {
